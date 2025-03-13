@@ -1,0 +1,23 @@
+﻿services:
+  orderflow.apphost:
+    image: orderflow.apphost
+    build:
+      context: .
+      dockerfile: OrderFlow.AppHost/Dockerfile
+
+  orderflow.database:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "orderflow"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+    ports:
+      - "5432:5432"
+    container_name: orderflow.database
+
+
+  orderflow.api:
+    image: orderflow.api
+    build:
+      context: .
+      dockerfile: OrderFlow.API/Dockerfile
