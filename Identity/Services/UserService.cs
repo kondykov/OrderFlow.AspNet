@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Data;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OrderFlow.Identity.Abstractions;
 using OrderFlow.Identity.Config;
+using OrderFlow.Identity.Models;
 using OrderFlow.Identity.Models.Request;
 using OrderFlow.Identity.Models.Response;
 using OrderFlow.Shared.Exceptions;
@@ -26,16 +28,17 @@ public class UserService(
     {
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            throw new EntityNotFoundException($"User with email {request.Email} does not exist");
+            throw new EntityNotFoundException("Пользователь не найден");
 
         var passwordVerificationResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
         if (passwordVerificationResult == PasswordVerificationResult.Failed)
-            throw new EntityNotFoundException($"User with email {request.Email} does not exist");
+            throw new EntityNotFoundException("Неверный пароль");
 
         return new AuthenticationResponse
         {
-            AccessToken = GenerateJwtToken(user)
+            AccessToken = GenerateJwtToken(user),
+            AccessTokenExpiration = DateTime.UtcNow.AddMinutes(identityConfig.Value.Jwt.ExpiryInMinutes)
         };
     }
 
@@ -43,7 +46,7 @@ public class UserService(
     {
         var userExists = await userManager.FindByEmailAsync(request.Email);
         if (userExists != null)
-            throw new EntityNotFoundException($"User with email {request.Email} does not exist");
+            throw new EntityNotFoundException("Такой пользователь уже существует");
 
         var user = await userManager.CreateAsync(new User
         {
@@ -53,7 +56,7 @@ public class UserService(
 
         if (user.Succeeded) return true;
 
-        throw new Exception($"User with email {request.Email} does not exist");
+        throw new Exception($"Произошла ошибка при создании пользователя: {string.Join(", ", user.Errors)}");
     }
 
 
@@ -64,6 +67,74 @@ public class UserService(
             throw new UnauthorizedAccessException();
         var userId = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return await userManager.FindByIdAsync(userId);
+    }
+
+    public async Task<UserDto> ChangePasswordAsync(ChangePasswordRequest request)
+    {
+        var user = await GetCurrentUserAsync();
+
+        var passwordVerification = userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
+        if (passwordVerification != PasswordVerificationResult.Success) throw new AccessDeniedException("Переданный пароль не соответсвутет текущему");
+        
+        await userManager.RemovePasswordAsync(user);
+        await userManager.AddPasswordAsync(user, request.Password);
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            NormalizedEmail = user.NormalizedEmail,
+            UserName = user.UserName,
+            NormalizedUserName = user.NormalizedUserName,
+            IsEmailConfirmed = user.EmailConfirmed,
+            IsTwoFactorEnabled = user.TwoFactorEnabled,
+            Roles = await userManager.GetRolesAsync(user)
+        };
+    }
+
+    public async Task<UserDto> AddRoleAsync(ChangeRoleRequest request)
+    {
+        var currentUser = await GetCurrentUserAsync();
+        var user = userManager.Users.FirstOrDefault(u => u.Id == request.Id);
+        if (user == null) throw new EntityNotFoundException("Пользователь не найден");
+        var role = await roleManager.FindByNameAsync(request.Role);
+        if (role == null) throw new EntityNotFoundException("Роль не найдена");
+        if (user == currentUser) throw new AccessDeniedException("Вы не можете изменить себе роль");
+        var result = await userManager.AddToRoleAsync(user, request.Role);
+        if (!result.Succeeded) throw new DataException($"Ошибка: {string.Join(", ", result.Errors)}");
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            NormalizedEmail = user.NormalizedEmail,
+            UserName = user.UserName,
+            NormalizedUserName = user.NormalizedUserName,
+            IsEmailConfirmed = user.EmailConfirmed,
+            IsTwoFactorEnabled = user.TwoFactorEnabled,
+            Roles = await userManager.GetRolesAsync(user)
+        };
+    }
+
+    public async Task<UserDto> RemoveRoleAsync(ChangeRoleRequest request)
+    {
+        var currentUser = await GetCurrentUserAsync();
+        var user = userManager.Users.FirstOrDefault(u => u.Id == request.Id);
+        if (user == null) throw new EntityNotFoundException("Пользователь не найден");
+        var role = await roleManager.FindByNameAsync(request.Role);
+        if (role == null) throw new EntityNotFoundException("Роль не найдена");
+        if (user == currentUser) throw new AccessDeniedException("Вы не можете изменить себе роль");
+        var result = await userManager.RemoveFromRoleAsync(user, request.Role);
+        if (!result.Succeeded) throw new DataException($"Ошибка: {string.Join(", ", result.Errors)}");
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            NormalizedEmail = user.NormalizedEmail,
+            UserName = user.UserName,
+            NormalizedUserName = user.NormalizedUserName,
+            IsEmailConfirmed = user.EmailConfirmed,
+            IsTwoFactorEnabled = user.TwoFactorEnabled,
+            Roles = await userManager.GetRolesAsync(user)
+        };
     }
 
     public async Task<bool> HasRoleAsync(Role? role)
@@ -91,7 +162,7 @@ public class UserService(
 
     private string GenerateJwtToken(User user)
     {
-        if (identityConfig.Value.Jwt.Secret == null) throw new Exception("Secret Key is missing.");
+        if (identityConfig.Value.Jwt.Secret == null) throw new Exception("Secret Key is missing");
 
         var claims = new List<Claim>
         {

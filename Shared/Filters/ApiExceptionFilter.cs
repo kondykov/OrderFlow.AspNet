@@ -34,12 +34,21 @@ public class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IException
                 };
                 break;
             }
+            case { } when exception is AccessDeniedException:
+            {
+                response = new ApiErrorResponse
+                {
+                    Code = 403,
+                    Message = exception.Message,
+                };
+                break;
+            }
             default:
             {
                 response = new ApiErrorResponse
                 {
                     Code = 500,
-                    Message = $"Внутренняя ошибка сервера: {exception.Message}",
+                    Message = $"Необработанная ошибка сервера",
                 };
                 break;
             }
