@@ -1,5 +1,3 @@
-using OrderFlow.Shared.Models;
-
 namespace OrderFlow.Identity.Models;
 
 public class UserDto

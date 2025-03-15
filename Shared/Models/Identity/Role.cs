@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace OrderFlow.Shared.Models;
+namespace OrderFlow.Shared.Models.Identity;
 
 public class Role : IdentityRole
 {

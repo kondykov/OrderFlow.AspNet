@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OrderFlow.Identity.Abstractions;
 using OrderFlow.Identity.Config;
+using OrderFlow.Identity.Interfaces;
 using OrderFlow.Identity.Models;
 using OrderFlow.Identity.Models.Request;
 using OrderFlow.Identity.Models.Response;
 using OrderFlow.Shared.Exceptions;
-using OrderFlow.Shared.Models;
+using OrderFlow.Shared.Models.Identity;
 
 namespace OrderFlow.Identity.Services;
 
@@ -66,16 +66,20 @@ public class UserService(
         if (claimsPrincipal == null || !claimsPrincipal.Identity.IsAuthenticated)
             throw new UnauthorizedAccessException();
         var userId = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return await userManager.FindByIdAsync(userId);
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null) throw new UnauthorizedAccessException();
+        return user;
     }
 
     public async Task<UserDto> ChangePasswordAsync(ChangePasswordRequest request)
     {
         var user = await GetCurrentUserAsync();
 
-        var passwordVerification = userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
-        if (passwordVerification != PasswordVerificationResult.Success) throw new AccessDeniedException("Переданный пароль не соответсвутет текущему");
-        
+        var passwordVerification =
+            userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
+        if (passwordVerification != PasswordVerificationResult.Success)
+            throw new AccessDeniedException("Переданный пароль не соответсвутет текущему");
+
         await userManager.RemovePasswordAsync(user);
         await userManager.AddPasswordAsync(user, request.Password);
         return new UserDto

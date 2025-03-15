@@ -43,6 +43,15 @@ public class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IException
                 };
                 break;
             }
+            case { } when exception is ArgumentException:
+            {
+                response = new ApiErrorResponse
+                {
+                    Code = 400,
+                    Message = exception.Message,
+                };
+                break;
+            }
             default:
             {
                 response = new ApiErrorResponse

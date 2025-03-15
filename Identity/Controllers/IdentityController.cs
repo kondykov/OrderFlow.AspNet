@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OrderFlow.Identity.Abstractions;
+using OrderFlow.Identity.Interfaces;
 using OrderFlow.Identity.Models.Request;
 using OrderFlow.Shared.Extensions;
 

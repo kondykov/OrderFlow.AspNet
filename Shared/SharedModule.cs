@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderFlow.Shared.Infrastructure.Data;
 using OrderFlow.Shared.Infrastructure.Data.Interfaces;
 using OrderFlow.Shared.Infrastructure.Data.Seeders;
-using OrderFlow.Shared.Models;
 
 namespace OrderFlow.Shared;
 
@@ -19,11 +15,9 @@ public static class SharedModule
         var seeders = new List<IDataSeeder>()
         {
             new RolesAndUsersSeeder(),
+            new ProductSeeder(),
         };
 
-        foreach (var seeder in seeders)
-        {
-            seeder.SeedAsync(builder.Services).ConfigureAwait(true);
-        }
+        foreach (var seeder in seeders) seeder.SeedAsync(builder.Services).ConfigureAwait(true);
     }
 }

@@ -1,9 +1,9 @@
 ﻿using OrderFlow.Identity.Models;
 using OrderFlow.Identity.Models.Request;
 using OrderFlow.Identity.Models.Response;
-using OrderFlow.Shared.Models;
+using OrderFlow.Shared.Models.Identity;
 
-namespace OrderFlow.Identity.Abstractions;
+namespace OrderFlow.Identity.Interfaces;
 
 public interface IUserService
 {

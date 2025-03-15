@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using OrderFlow.Identity.Abstractions;
 using OrderFlow.Identity.Config;
+using OrderFlow.Identity.Interfaces;
 using OrderFlow.Identity.Services;
 using OrderFlow.Shared.Infrastructure.Data;
-using OrderFlow.Shared.Models;
+using OrderFlow.Shared.Models.Identity;
 
 namespace OrderFlow.Identity;
 

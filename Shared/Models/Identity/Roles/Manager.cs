@@ -1,4 +1,4 @@
-﻿namespace OrderFlow.Shared.Models.Roles;
+﻿namespace OrderFlow.Shared.Models.Identity.Roles;
 
 public sealed class Manager : Role
 {

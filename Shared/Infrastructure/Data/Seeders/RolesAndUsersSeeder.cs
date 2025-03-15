@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using OrderFlow.Shared.Infrastructure.Data.Interfaces;
-using OrderFlow.Shared.Models;
-using OrderFlow.Shared.Models.Roles;
+using OrderFlow.Shared.Models.Identity;
+using OrderFlow.Shared.Models.Identity.Roles;
 
 namespace OrderFlow.Shared.Infrastructure.Data.Seeders;
 
@@ -10,8 +10,11 @@ public class RolesAndUsersSeeder : IDataSeeder
 {
     public async Task SeedAsync(IServiceCollection serviceCollection)
     {
-        var roleManager = serviceCollection.BuildServiceProvider().GetRequiredService<RoleManager<Role>>();
-        var userManager = serviceCollection.BuildServiceProvider().GetRequiredService<UserManager<User>>();
+        await using var serviceProvider = serviceCollection.BuildServiceProvider();
+        using var scope = serviceProvider.CreateScope();
+        
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
         var roles = new List<Role>
         {
