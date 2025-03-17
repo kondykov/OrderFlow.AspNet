@@ -15,7 +15,6 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
 
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
-    
     public DbSet<Product> Products { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -23,7 +22,7 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Order>()
-            .Property(o => o.OrderStatus)
+            .Property(o => o.Status)
             .HasConversion(
                 v => v.ToString(),
                 v => (OrderStatus)Enum.Parse(typeof(OrderStatus), v)

@@ -22,7 +22,7 @@ builder.Services.AddControllers()
         options.SerializerSettings.Converters.Add(new StringEnumConverter());
         options.SerializerSettings.ContractResolver = new DefaultContractResolver()
         {
-            NamingStrategy = new SnakeCaseNamingStrategy()
+            //NamingStrategy = new SnakeCaseNamingStrategy()
         };
         options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
     });

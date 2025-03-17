@@ -64,7 +64,7 @@ public class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IException
         }
 
         logger.LogError($"Api method {context.HttpContext.Request.Path} finished with code {response.Code} and error: " +
-                        $"{JsonSerializer.Serialize(response)} : Exception: { exception }");
+                        $"{JsonSerializer.Serialize(response)} : Exception: { exception.Message }");
         context.Result = new JsonResult(response) { StatusCode = response.Code };
         context.ExceptionHandled = true;
     }

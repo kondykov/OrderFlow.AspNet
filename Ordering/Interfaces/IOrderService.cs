@@ -13,4 +13,5 @@ public interface IOrderService
     Task<OrderItem> GetOrderItem(int id);
     Task<List<OrderItem>> GetOrderItems(int orderId);
     Task<OrderItem> AddOrUpdateOrderItem(AddOrUpdateOrderItemRequest request);
+    Task<Dictionary<string, string>> GetOrderStatuses();
 }

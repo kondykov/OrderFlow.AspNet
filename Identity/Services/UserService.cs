@@ -182,7 +182,7 @@ public class UserService(
             identityConfig.Value.Jwt.Issuer,
             identityConfig.Value.Jwt.Audience,
             claims,
-            expires: DateTime.Now.AddMinutes(30),
+            expires: DateTime.Now.AddDays(1),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

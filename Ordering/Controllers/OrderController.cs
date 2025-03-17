@@ -28,4 +28,10 @@ public class OrderController(IOrderService service) : ApiController
     { 
         return Ok(await service.UpdateOrder(request));
     }
+
+    [HttpGet("get-order-statuses")]
+    public async Task<IActionResult> GetOrderStatuses()
+    {
+        return Ok(await service.GetOrderStatuses());
+    }
 }

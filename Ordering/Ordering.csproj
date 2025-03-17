@@ -14,10 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Models\Response\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Identity\Identity.csproj" />
       <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>

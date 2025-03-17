@@ -9,6 +9,7 @@ public class Order : TimeStamps
     [Key] public int Id { get; set; }
     public string UserId { get; set; }
     [JsonIgnore] public User User { get; set; }
-    public OrderStatus OrderStatus { get; set; } = OrderStatus.New;
+    public OrderStatus Status { get; set; } = OrderStatus.New;
+    public string? Reason { get; set; } = null;
     public List<OrderItem> OrderItems { get; set; } = [];
 }

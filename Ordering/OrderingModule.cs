@@ -13,5 +13,8 @@ public static class OrderingModule
         builder.Services.AddScoped<IOrderService, OrderService>();
         builder.Services.AddScoped<IOrdersRepository, OrdersRepository>();
         builder.Services.AddScoped<IOrderItemsRepository, OrderItemsRepository>();
+        
+        builder.Services.AddScoped<IProductService, ProductService>();
+        builder.Services.AddScoped<IProductRepository, ProductRepository>();
     }
 }

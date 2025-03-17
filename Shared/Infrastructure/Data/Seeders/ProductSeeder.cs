@@ -15,14 +15,15 @@ public class ProductSeeder : IDataSeeder
 
         List<Product> products =
         [
-            new() { Id = 1, Name = "Продукт 1", Price = 127 },
-            new() { Id = 2, Name = "Продукт 2", Price = 137 },
-            new() { Id = 3, Name = "Продукт 3", Price = 149 },
-            new() { Id = 4, Name = "Продукт с копейками", Price = (decimal)199.99 }
+            new() { Name = "Продукт 1", Price = 127 },
+            new() { Name = "Продукт 2", Price = 137 },
+            new() { Name = "Продукт 3", Price = 149 },
+            new() { Name = "Продукт с копейками", Price = (decimal)199.99 },
+            new() { Name = "Неактивный продукт с копейками", Price = (decimal)199.99, IsActive = false},
         ];
 
-        foreach (var product in products.Where(product => !context.Products.Any(p => p.Id == product.Id)))
-            context.Products.Add(product);
+        foreach (var product in products.Where(product => !context.Products.Any(p => p.Name == product.Name)))
+            await context.Products.AddAsync(product);
         await context.SaveChangesAsync();
     }
 }
