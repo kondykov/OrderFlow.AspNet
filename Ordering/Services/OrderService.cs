@@ -1,5 +1,6 @@
 using OrderFlow.Identity.Interfaces;
 using OrderFlow.Ordering.Interfaces;
+using OrderFlow.Ordering.Models;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Extensions;
@@ -14,9 +15,9 @@ public class OrderService(
     IOrderItemsRepository orderItemsRepository
 ) : IOrderService
 {
-    public async Task<List<Order>> GetOrders()
+    public async Task<PaginationResponse<List<Order>>> GetOrders(int? pageNumber = 1, int? pageSize = 20)
     {
-        throw new NotImplementedException();
+        return await ordersRepository.GetAllAsync(pageNumber, pageSize);
     }
 
     public async Task<Order> GetOrder(int id)
@@ -43,31 +44,34 @@ public class OrderService(
         if (!Enum.TryParse(request.OrderStatus, true, out OrderStatus orderStatus))
             throw new ArgumentException($"Статус {request.OrderStatus} не найден");
         order.UpdatedAt = DateTime.UtcNow;
-        if (orderStatus == OrderStatus.New)
-            throw new AccessDeniedException(
-                $"Невозможно изменить статус на \"{OrderStatus.New.GetDescription()}\"");
+        switch (order.Status)
+        {
+            case OrderStatus.Completed:
+                throw new AccessDeniedException(
+                    $"Нельзя изменить заказ со статусом \"{OrderStatus.Completed.GetDescription()}\"");
+            case OrderStatus.Cancelled or OrderStatus.Rejected:
+                throw new AccessDeniedException(
+                    $"Нельзя изменить заказ со статусом \"{OrderStatus.Cancelled.GetDescription()}\" или \"{OrderStatus.Rejected.GetDescription()}\"");
+        }
 
-        if (order.Status is OrderStatus.Cancelled or OrderStatus.Rejected)
-            throw new AccessDeniedException(
-                $"Нельзя изменить заказ со статусом \"{OrderStatus.Cancelled.GetDescription()}\" или \"{OrderStatus.Rejected.GetDescription()}\"");
+        switch (orderStatus)
+        {
+            case OrderStatus.New:
+                throw new AccessDeniedException(
+                    $"Невозможно изменить статус на \"{OrderStatus.New.GetDescription()}\"");
+            case OrderStatus.Cancelled:
+            case OrderStatus.Rejected:
+                if (string.IsNullOrEmpty(request.Reason))
+                    throw new ArgumentException(
+                        $"Необходимо передать причину ({nameof(request.Reason)}) отклонения или отмены заказа");
 
-        if (order.Status is OrderStatus.Completed && orderStatus is OrderStatus.Rejected)
-            throw new AccessDeniedException($"Нельзя отклонить завершённый заказ");
-        
-        if (orderStatus.Equals(OrderStatus.Cancelled) || orderStatus.Equals(OrderStatus.Rejected))
-            if (string.IsNullOrEmpty(request.Reason))
-            {
-                throw new ArgumentException($"Необходимо передать причину ({nameof(request.Reason)}) смены статуса");
-            }
-            else
-            {
                 order.Status = orderStatus;
                 order.Reason = request.Reason;
                 return await ordersRepository.UpdateAsync(order);
-            }
-
-        order.Status = orderStatus;
-        return await ordersRepository.UpdateAsync(order);
+            default:
+                order.Status = orderStatus;
+                return await ordersRepository.UpdateAsync(order);
+        }
     }
 
     public Task<OrderItem> GetOrderItem(int id)
@@ -94,8 +98,7 @@ public class OrderService(
         var orderItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == product.Id);
         if (orderItem == null)
         {
-            if (!product.IsActive)
-                throw new AccessDeniedException("Продукт недоступен для продажи");
+            if (!product.IsActive) throw new AccessDeniedException("Продукт недоступен для продажи");
             orderItem = new OrderItem
             {
                 OrderId = order.Id,

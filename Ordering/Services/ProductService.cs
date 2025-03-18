@@ -5,43 +5,44 @@ using OrderFlow.Shared.Models.Ordering;
 
 namespace OrderFlow.Ordering.Services;
 
-public class ProductService(IProductRepository repository) : IProductService
+public class ProductService(IProductRepository productRepository, IOrderItemsRepository orderItemsRepository)
+    : IProductService
 {
-    public async Task<int> AddAsync(AddProductRequest request)
+    public async Task<Product> AddAsync(AddProductRequest request)
     {
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
-        
-        var product = new Product()
+
+        var product = new Product
         {
             Name = request.Name,
             Description = request.Description,
             Price = request.Price,
-            IsActive = false,
+            IsActive = false
         };
-        
-        return await repository.AddAsync(product);
+        await productRepository.AddAsync(product);
+        return product;
     }
 
     public async Task<Product> UpdateAsync(UpdateProductRequest request)
     {
-        var product = await repository.GetByIdAsync(request.Id);
+        var product = await productRepository.GetByIdAsync(request.Id);
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
-        return await repository.UpdateAsync(product);
+        return await productRepository.UpdateAsync(product);
     }
 
-    public async Task<List<Product>> GetAllAsync()
+    public async Task<List<Product>> GetAllAsync(int? page = 1, int? pageSize = 20)
     {
-        return await repository.GetAllAsync();
+        return await productRepository.GetAllAsync();
     }
 
     public async Task<List<Product>> GetAllActiveAsync()
     {
-        return await repository.GetActivesAsync();
+        return await productRepository.GetActivesAsync();
     }
 
     public async Task<Product?> FindByIdAsync(int id)
     {
-        return await repository.FindByIdAsync(id);
+        return await productRepository.FindByIdAsync(id);
     }
 
     public async Task<Product> GetByIdAsync(int id)
@@ -53,17 +54,17 @@ public class ProductService(IProductRepository repository) : IProductService
 
     public async Task<List<Product>> GetByNameAsync(string name)
     {
-        return await repository.FindByNameAsync(name);
+        return await productRepository.FindByNameAsync(name);
     }
 
-    public async Task<bool> DeleteAsync(int productId)
+    public async Task<bool> DeleteAsync(RemoveProductRequest request)
     {
-        var product = await repository.FindByIdAsync(productId);
+        var product = await productRepository.FindByIdAsync(request.ProductId);
         if (product == null) throw new EntityNotFoundException("Продукт не найден");
-        if (product.OrderItems.Count > 0)
+        if (await orderItemsRepository.CheckProductIsUsedAsync(product.Id))
             throw new AccessDeniedException(
                 "Нельзя удалять продукт, который уже используется в заказах. Если необходимо вывести продукт из продажи, то установите продукту статус \"Неактивен\"");
-        await repository.DeleteAsync(product);
+        await productRepository.DeleteAsync(product);
         return true;
     }
 }

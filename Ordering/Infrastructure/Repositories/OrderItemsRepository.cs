@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Infrastructure.Data;
@@ -10,6 +11,16 @@ public class OrderItemsRepository(DataContext context) : IOrderItemsRepository
     public async Task<OrderItem?> FindByIdAsync(int id)
     {
         return context.OrderItems.FirstOrDefault(oi => oi.Id == id);
+    }
+
+    public async Task<List<OrderItem>> FindByProductIdAsync(int productId)
+    {
+        return await context.OrderItems.Where(oi => oi.ProductId == productId).ToListAsync();
+    }
+
+    public async Task<bool> CheckProductIsUsedAsync(int productId)
+    {
+        return await context.OrderItems.AnyAsync(oi => oi.ProductId == productId);
     }
 
     public async Task<OrderItem> AddAsync(OrderItem orderItem)

@@ -12,20 +12,20 @@ namespace OrderFlow.Ordering.Controllers;
 public class OrderItemController(IOrderService orderService) : ApiController
 {
     [HttpPost("add-or-update")]
-    public async Task<IActionResult> AddOrUpdate([FromBody]AddOrUpdateOrderItemRequest request)
+    public async Task<IActionResult> AddOrUpdate([FromBody] AddOrUpdateOrderItemRequest request)
     {
         return Ok(await orderService.AddOrUpdateOrderItem(request));
     }
-    
-    [HttpGet("get-by-order-id")]
+
+    [HttpGet("{orderId}")]
     public async Task<IActionResult> GetByOrderId(int orderId)
     {
-        if (orderId <= 0 ) return BadRequest(new ApiErrorResponse()
-        {
-            Code = 400,
-            Message = "Необходимо передать идентификатор заказа"
-        });
-        
+        if (orderId <= 0)
+            return BadRequest(new OperationResult
+            {
+                Error = "Необходимо передать идентификатор заказа"
+            });
+
         return Ok(await orderService.GetOrderItems(orderId));
     }
 }

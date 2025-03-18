@@ -15,17 +15,23 @@ public class OrderController(IOrderService service) : ApiController
     {
         return Ok(await service.CreateOrder());
     }
-    
-    [HttpGet("get")]
-    public async Task<IActionResult> Get([FromQuery] int orderId)
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Get(int id)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        return Ok(await service.GetOrder(orderId));
+        return Ok(await service.GetOrder(id));
+    }
+
+    [HttpGet("get-all")]
+    public async Task<IActionResult> GetAll([FromQuery] int? page = 1, [FromQuery] int? pageSize = 20)
+    {
+        return Ok(await service.GetOrders(page, pageSize));
     }
 
     [HttpPost("update")]
     public async Task<IActionResult> Update([FromBody] UpdateOrderRequest request)
-    { 
+    {
         return Ok(await service.UpdateOrder(request));
     }
 

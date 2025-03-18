@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Ordering.Interfaces;
+using OrderFlow.Ordering.Models;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Infrastructure.Data;
 using OrderFlow.Shared.Models.Ordering;
@@ -37,5 +38,24 @@ public class OrdersRepository(DataContext context) : IOrdersRepository
         var order = await FindByIdAsync(id);
         if (order == null) throw new EntityNotFoundException($"Заказ с идентификатором {id} не найден");
         return order;
+    }
+
+    public async Task<PaginationResponse<List<Order>>> GetAllAsync(int? pageNumber = 1, int? pageSize = 20)
+    {
+        var totalCount = await context.Orders.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize.Value);
+        var orders = await context.Orders
+            .Include(o => o.OrderItems)
+            .Skip((int)((pageNumber - 1) * pageSize)!)
+            .Take((int)pageSize!)
+            .ToListAsync();
+
+        return new PaginationResponse<List<Order>>
+        {
+            Data = orders,
+            Page = pageNumber ?? 1,
+            PageSize = pageSize ?? 20,
+            Pages = totalPages,
+        };
     }
 }

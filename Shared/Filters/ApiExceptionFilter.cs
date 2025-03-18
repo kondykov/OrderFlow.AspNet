@@ -12,60 +12,68 @@ public class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IException
     public void OnException(ExceptionContext context)
     {
         var exception = context.Exception;
-        ApiErrorResponse? response;
+        OperationResult? response;
+        var statusCode = 400;
 
         switch (true)
         {
             case { } when exception is DuplicatedEntityException:
             {
-                response = new ApiErrorResponse
+                statusCode = 409;
+                response = new OperationResult
                 {
-                    Code = 409,
-                    Message = exception.Message,
+                    Error = exception.Message,
                 };
                 break;
             }
             case { } when exception is EntityNotFoundException:
             {
-                response = new ApiErrorResponse
+                statusCode = 404;
+                response = new OperationResult
                 {
-                    Code = 404,
-                    Message = exception.Message,
+                    Error = exception.Message,
                 };
                 break;
             }
             case { } when exception is AccessDeniedException:
             {
-                response = new ApiErrorResponse
+                statusCode = 403;
+                response = new OperationResult
                 {
-                    Code = 403,
-                    Message = exception.Message,
+                    Error = exception.Message,
                 };
                 break;
             }
             case { } when exception is ArgumentException:
             {
-                response = new ApiErrorResponse
+                statusCode = 400;
+                response = new OperationResult
                 {
-                    Code = 400,
-                    Message = exception.Message,
+                    Error = exception.Message,
                 };
                 break;
             }
             default:
             {
-                response = new ApiErrorResponse
+                statusCode = 500;
+                #if DEBUG
+                response = new OperationResult
                 {
-                    Code = 500,
-                    Message = $"Необработанная ошибка сервера",
+                    Error = $"Ошибка: {exception}",
                 };
+                #else
+                response = new OperationResult
+                {
+                    Error = $"Необработанная ошибка сервера",
+                };
+                #endif
                 break;
             }
         }
 
-        logger.LogError($"Api method {context.HttpContext.Request.Path} finished with code {response.Code} and error: " +
+        logger.LogError($"Api method {context.HttpContext.Request.Path} finished with code {statusCode} and error: " +
                         $"{JsonSerializer.Serialize(response)} : Exception: { exception.Message }");
-        context.Result = new JsonResult(response) { StatusCode = response.Code };
+        context.Result = new JsonResult(response) { StatusCode = statusCode };
         context.ExceptionHandled = true;
     }
 }
