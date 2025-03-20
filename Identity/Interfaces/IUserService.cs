@@ -2,6 +2,7 @@
 using OrderFlow.Identity.Models.Request;
 using OrderFlow.Identity.Models.Response;
 using OrderFlow.Shared.Models.Identity;
+using OrderFlow.Shared.Models.Identity.DTOs;
 
 namespace OrderFlow.Identity.Interfaces;
 

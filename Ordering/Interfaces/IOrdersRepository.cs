@@ -1,4 +1,5 @@
 using OrderFlow.Ordering.Models;
+using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Ordering;
 
 namespace OrderFlow.Ordering.Interfaces;

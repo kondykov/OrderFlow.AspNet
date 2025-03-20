@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -13,14 +14,15 @@ using OrderFlow.Identity.Models.Request;
 using OrderFlow.Identity.Models.Response;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Models.Identity;
+using OrderFlow.Shared.Models.Identity.DTOs;
 
 namespace OrderFlow.Identity.Services;
 
 public class UserService(
-    IHttpContextAccessor httpContextAccessor,
-    IPasswordHasher<User> passwordHasher,
+    IMapper mapper,
     UserManager<User> userManager,
     RoleManager<Role> roleManager,
+    IHttpContextAccessor httpContextAccessor,
     IOptions<IdentityConfig> identityConfig
 ) : IUserService
 {
@@ -30,10 +32,10 @@ public class UserService(
         if (user == null)
             throw new EntityNotFoundException("Пользователь не найден");
 
-        var passwordVerificationResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        var passwordVerificationResult = userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
         if (passwordVerificationResult == PasswordVerificationResult.Failed)
-            throw new EntityNotFoundException("Неверный пароль");
+            throw new ArgumentException("Неверный пароль");
 
         return new AuthenticationResponse
         {
@@ -75,24 +77,12 @@ public class UserService(
     {
         var user = await GetCurrentUserAsync();
 
-        var passwordVerification =
-            userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
-        if (passwordVerification != PasswordVerificationResult.Success)
-            throw new AccessDeniedException("Переданный пароль не соответсвутет текущему");
+        var passwordVerification = userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
+        if (passwordVerification != PasswordVerificationResult.Success) throw new ArgumentException("Неверный пароль");
 
         await userManager.RemovePasswordAsync(user);
         await userManager.AddPasswordAsync(user, request.Password);
-        return new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            NormalizedEmail = user.NormalizedEmail,
-            UserName = user.UserName,
-            NormalizedUserName = user.NormalizedUserName,
-            IsEmailConfirmed = user.EmailConfirmed,
-            IsTwoFactorEnabled = user.TwoFactorEnabled,
-            Roles = await userManager.GetRolesAsync(user)
-        };
+        return mapper.Map<UserDto>(user);
     }
 
     public async Task<UserDto> AddRoleAsync(ChangeRoleRequest request)
@@ -105,17 +95,7 @@ public class UserService(
         if (user == currentUser) throw new AccessDeniedException("Вы не можете изменить себе роль");
         var result = await userManager.AddToRoleAsync(user, request.Role);
         if (!result.Succeeded) throw new DataException($"Ошибка: {string.Join(", ", result.Errors)}");
-        return new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            NormalizedEmail = user.NormalizedEmail,
-            UserName = user.UserName,
-            NormalizedUserName = user.NormalizedUserName,
-            IsEmailConfirmed = user.EmailConfirmed,
-            IsTwoFactorEnabled = user.TwoFactorEnabled,
-            Roles = await userManager.GetRolesAsync(user)
-        };
+        return mapper.Map<UserDto>(user);
     }
 
     public async Task<UserDto> RemoveRoleAsync(ChangeRoleRequest request)
@@ -128,17 +108,7 @@ public class UserService(
         if (user == currentUser) throw new AccessDeniedException("Вы не можете изменить себе роль");
         var result = await userManager.RemoveFromRoleAsync(user, request.Role);
         if (!result.Succeeded) throw new DataException($"Ошибка: {string.Join(", ", result.Errors)}");
-        return new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            NormalizedEmail = user.NormalizedEmail,
-            UserName = user.UserName,
-            NormalizedUserName = user.NormalizedUserName,
-            IsEmailConfirmed = user.EmailConfirmed,
-            IsTwoFactorEnabled = user.TwoFactorEnabled,
-            Roles = await userManager.GetRolesAsync(user)
-        };
+        return mapper.Map<UserDto>(user);
     }
 
     public async Task<bool> HasRoleAsync(Role? role)

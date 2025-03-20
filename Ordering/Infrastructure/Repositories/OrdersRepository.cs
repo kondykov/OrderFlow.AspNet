@@ -3,6 +3,7 @@ using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Infrastructure.Data;
+using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Ordering;
 
 namespace OrderFlow.Ordering.Infrastructure.Repositories;

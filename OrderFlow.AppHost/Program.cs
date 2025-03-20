@@ -20,7 +20,7 @@ builder.Services.AddControllers()
     {
         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
         options.SerializerSettings.Converters.Add(new StringEnumConverter());
-        options.SerializerSettings.ContractResolver = new DefaultContractResolver()
+        options.SerializerSettings.ContractResolver = new DefaultContractResolver
         {
             //NamingStrategy = new SnakeCaseNamingStrategy()
         };
@@ -43,9 +43,21 @@ var app = builder.Build();
 app.Use(async (context, next) =>
 {
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation($"Incoming request: {context.Request.Method} {context.Request.Path}");
-    await next();
-    logger.LogInformation($"Incoming request: {context.Request.Method} {context.Request.Path} finished with {context.Response.StatusCode}");
+    logger.LogInformation($"Входящий запрос: {context.Request.Method} {context.Request.Path}");
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        if (app.Environment.IsDevelopment())
+            logger.LogError($"Ошибка: {context.Request.Method} {context.Request.Path}: {ex.Message}");
+    }
+    finally
+    {
+        logger.LogInformation(
+            $"Запрос выполнен: {context.Request.Method} {context.Request.Path} [{context.Response.StatusCode}] ");
+    }
 });
 
 if (app.Environment.IsDevelopment())

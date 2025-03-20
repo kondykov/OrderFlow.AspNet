@@ -1,14 +1,16 @@
+using AutoMapper;
 using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Models.Ordering;
+using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Services;
 
-public class ProductService(IProductRepository productRepository, IOrderItemsRepository orderItemsRepository)
+public class ProductService(IProductRepository productRepository, IOrderItemsRepository orderItemsRepository, IMapper mapper)
     : IProductService
 {
-    public async Task<Product> AddAsync(AddProductRequest request)
+    public async Task<ProductDto> AddAsync(AddProductRequest request)
     {
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
 
@@ -20,41 +22,41 @@ public class ProductService(IProductRepository productRepository, IOrderItemsRep
             IsActive = false
         };
         await productRepository.AddAsync(product);
-        return product;
+        return mapper.Map<ProductDto>(product);
     }
 
-    public async Task<Product> UpdateAsync(UpdateProductRequest request)
+    public async Task<ProductDto> UpdateAsync(UpdateProductRequest request)
     {
         var product = await productRepository.GetByIdAsync(request.Id);
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
-        return await productRepository.UpdateAsync(product);
+        return mapper.Map<ProductDto>(await productRepository.UpdateAsync(product));
     }
 
-    public async Task<List<Product>> GetAllAsync(int? page = 1, int? pageSize = 20)
+    public async Task<List<ProductDto>> GetAllAsync(int? page = 1, int? pageSize = 20)
     {
-        return await productRepository.GetAllAsync();
+        return mapper.Map<List<ProductDto>>(await productRepository.GetAllAsync());
     }
 
     public async Task<List<Product>> GetAllActiveAsync()
     {
-        return await productRepository.GetActivesAsync();
+        return mapper.Map<List<Product>>(await productRepository.GetActivesAsync());
     }
 
-    public async Task<Product?> FindByIdAsync(int id)
+    public async Task<ProductDto> FindByIdAsync(int id)
     {
-        return await productRepository.FindByIdAsync(id);
+        return mapper.Map<ProductDto>(await productRepository.FindByIdAsync(id));
     }
 
-    public async Task<Product> GetByIdAsync(int id)
+    public async Task<ProductDto> GetByIdAsync(int id)
     {
-        var product = await FindByIdAsync(id);
+        var product = await productRepository.GetByIdAsync(id);
         if (product == null) throw new EntityNotFoundException("Продукт не найден");
-        return product;
+        return mapper.Map<ProductDto>(product);
     }
 
-    public async Task<List<Product>> GetByNameAsync(string name)
+    public async Task<List<ProductDto>> GetByNameAsync(string name)
     {
-        return await productRepository.FindByNameAsync(name);
+        return mapper.Map<List<ProductDto>>(await productRepository.GetAllAsync());
     }
 
     public async Task<bool> DeleteAsync(RemoveProductRequest request)

@@ -6,6 +6,7 @@ using OrderFlow.Shared.Config;
 using OrderFlow.Shared.Infrastructure.Data;
 using OrderFlow.Shared.Infrastructure.Data.Interfaces;
 using OrderFlow.Shared.Infrastructure.Data.Seeders;
+using OrderFlow.Shared.Mappers;
 
 namespace OrderFlow.Shared;
 
@@ -15,7 +16,7 @@ public static class SharedModule
     {
         builder.Services.AddScoped<DataContext>();
         builder.Services.Configure<ShaderConfig>(builder.Configuration.GetSection("Shared"));
-
+        builder.Services.AddAutoMapper(typeof(MapperProfile));
         
         using var serviceProvider = builder.Services.BuildServiceProvider();
         var scope = serviceProvider.CreateScope();

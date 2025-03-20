@@ -1,10 +1,13 @@
+using AutoMapper;
 using OrderFlow.Identity.Interfaces;
 using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Extensions;
+using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Ordering;
+using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Services;
 
@@ -12,21 +15,29 @@ public class OrderService(
     IUserService userService,
     IProductService productService,
     IOrdersRepository ordersRepository,
-    IOrderItemsRepository orderItemsRepository
+    IOrderItemsRepository orderItemsRepository,
+    IMapper mapper
 ) : IOrderService
 {
-    public async Task<PaginationResponse<List<Order>>> GetOrders(int? pageNumber = 1, int? pageSize = 20)
+    public async Task<PaginationResponse<List<OrderDto>>> GetOrders(int? pageNumber = 1, int? pageSize = 20)
     {
-        return await ordersRepository.GetAllAsync(pageNumber, pageSize);
+        var paginationResponse = await ordersRepository.GetAllAsync(pageNumber, pageSize);
+        return new PaginationResponse<List<OrderDto>>()
+        {
+            Page = paginationResponse.Page,
+            Pages = paginationResponse.Pages,
+            PageSize = paginationResponse.PageSize,
+            Data = mapper.Map<List<OrderDto>>(paginationResponse.Data),
+        };
     }
 
-    public async Task<Order> GetOrder(int id)
+    public async Task<OrderDto> Get(int id)
     {
         var order = await ordersRepository.GetByIdAsync(id);
-        return order;
+        return mapper.Map<OrderDto>(order);
     }
 
-    public async Task<Order> CreateOrder()
+    public async Task<OrderDto> Create()
     {
         var user = await userService.GetCurrentUserAsync();
 
@@ -34,10 +45,10 @@ public class OrderService(
         {
             UserId = user.Id
         };
-        return await ordersRepository.CreateAsync(order);
+        return mapper.Map<OrderDto>(await ordersRepository.CreateAsync(order));
     }
 
-    public async Task<Order> UpdateOrder(UpdateOrderRequest request)
+    public async Task<OrderDto> Update(UpdateOrderRequest request)
     {
         var order = await ordersRepository.GetByIdAsync(request.Id);
 
@@ -67,11 +78,12 @@ public class OrderService(
 
                 order.Status = orderStatus;
                 order.Reason = request.Reason;
-                return await ordersRepository.UpdateAsync(order);
+                break;
             default:
                 order.Status = orderStatus;
-                return await ordersRepository.UpdateAsync(order);
+                break;
         }
+        return mapper.Map<OrderDto>(await ordersRepository.UpdateAsync(order));
     }
 
     public Task<OrderItem> GetOrderItem(int id)
@@ -80,13 +92,13 @@ public class OrderService(
         var order = ordersRepository.GetByIdAsync(id);
     }
 
-    public async Task<List<OrderItem>> GetOrderItems(int orderId)
+    public async Task<List<OrderItemDto>> GetOrderItems(int orderId)
     {
         var order = await ordersRepository.GetByIdAsync(orderId);
-        return order.OrderItems;
+        return mapper.Map<List<OrderItemDto>>(order.OrderItems);
     }
 
-    public async Task<OrderItem> AddOrUpdateOrderItem(AddOrUpdateOrderItemRequest request)
+    public async Task<OrderItemDto> AddOrUpdateOrderItem(AddOrUpdateOrderItemRequest request)
     {
         var order = await ordersRepository.GetByIdAsync(request.OrderId);
         if (order.Status == OrderStatus.New) order.Status = OrderStatus.Processing;
@@ -105,20 +117,20 @@ public class OrderService(
                 Quantity = request.Quantity,
                 ProductId = product.Id
             };
-            return await orderItemsRepository.AddAsync(orderItem);
+            return mapper.Map<OrderItemDto>(await orderItemsRepository.AddAsync(orderItem));
         }
 
         orderItem.Quantity = request.Quantity;
         orderItem.UpdatedAt = DateTime.UtcNow;
-        return await orderItemsRepository.UpdateAsync(orderItem);
+        return mapper.Map<OrderItemDto>(await orderItemsRepository.UpdateAsync(orderItem));
     }
 
-    public async Task<Dictionary<string, string>> GetOrderStatuses()
+    public async Task<Dictionary<OrderStatus, string>> GetOrderStatuses()
     {
         return Enum.GetValues(typeof(OrderStatus))
             .Cast<OrderStatus>()
             .ToDictionary(
-                e => e.ToString(),
+                e => e,
                 e => e.GetDescription()
             );
     }

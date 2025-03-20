@@ -1,4 +1,4 @@
-namespace OrderFlow.Ordering.Models;
+namespace OrderFlow.Shared.Models;
 
 public class PaginationResponse<T>
 {

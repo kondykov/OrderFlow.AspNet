@@ -1,4 +1,4 @@
-namespace OrderFlow.Identity.Models;
+namespace OrderFlow.Shared.Models.Identity.DTOs;
 
 public class UserDto
 {
