@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using OrderFlow.Shared.Infrastructure.Data.Interfaces;
 using OrderFlow.Shared.Models.Identity;
@@ -41,6 +42,18 @@ public class RolesAndUsersSeeder : IDataSeeder
         {
             var createAdminResult = await userManager.CreateAsync(adminUser, "Pa$$w0rd");
             if (createAdminResult.Succeeded) await userManager.AddToRoleAsync(adminUser, new Admin().ToString());
+        }
+        
+        var managerUser = new User
+        {
+            UserName = "Manager", Email = "manager@example.com"
+        };
+        
+        userExist = await userManager.FindByEmailAsync(managerUser.Email);
+        if (userExist == null)
+        {
+            var createAdminResult = await userManager.CreateAsync(managerUser, "Pa$$w0rd");
+            if (createAdminResult.Succeeded) await userManager.AddToRoleAsync(managerUser, new Manager().ToString());
         }
     }
 }

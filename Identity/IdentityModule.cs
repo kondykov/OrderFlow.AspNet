@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OrderFlow.Identity.Config;
+using OrderFlow.Identity.Infrastructure.Repositories;
 using OrderFlow.Identity.Interfaces;
 using OrderFlow.Identity.Services;
 using OrderFlow.Shared.Infrastructure.Data;
@@ -20,6 +21,7 @@ public static class IdentityModule
     {
         builder.Services.Configure<IdentityConfig>(builder.Configuration.GetSection("Identity"));
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IRefreshTokensRepository, RefreshTokenRepository>();
         
         builder.Services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<DataContext>()

@@ -1,17 +1,21 @@
 using AutoMapper;
+using OrderFlow.Identity.Interfaces;
 using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
+using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Services;
 
-public class ProductService(IProductRepository productRepository, IOrderItemsRepository orderItemsRepository, IMapper mapper)
+public class ProductService(IProductRepository productRepository, IOrderItemsRepository orderItemsRepository, IUserService userService, IMapper mapper)
     : IProductService
 {
     public async Task<ProductDto> AddAsync(AddProductRequest request)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanCreateProduct);
+        
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
 
         var product = new Product
@@ -27,6 +31,8 @@ public class ProductService(IProductRepository productRepository, IOrderItemsRep
 
     public async Task<ProductDto> UpdateAsync(UpdateProductRequest request)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanEditProduct);
+
         var product = await productRepository.GetByIdAsync(request.Id);
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
         return mapper.Map<ProductDto>(await productRepository.UpdateAsync(product));
@@ -61,6 +67,8 @@ public class ProductService(IProductRepository productRepository, IOrderItemsRep
 
     public async Task<bool> DeleteAsync(RemoveProductRequest request)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanDeleteProduct);
+        
         var product = await productRepository.FindByIdAsync(request.ProductId);
         if (product == null) throw new EntityNotFoundException("Продукт не найден");
         if (await orderItemsRepository.CheckProductIsUsedAsync(product.Id))

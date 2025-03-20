@@ -9,5 +9,5 @@ public class UserDto
     public string? NormalizedUserName { get; set; }
     public bool IsEmailConfirmed { get; set; } = false;
     public bool IsTwoFactorEnabled { get; set; } = false;
-    public IList<string> Roles { get; set; }
+    public IList<RoleDto> Roles { get; set; }
 }

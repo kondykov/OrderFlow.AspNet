@@ -6,6 +6,7 @@ using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
+using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Ordering.DTOs;
 
@@ -21,6 +22,8 @@ public class OrderService(
 {
     public async Task<PaginationResponse<List<OrderDto>>> GetOrders(int? pageNumber = 1, int? pageSize = 20)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
+        
         var paginationResponse = await ordersRepository.GetAllAsync(pageNumber, pageSize);
         return new PaginationResponse<List<OrderDto>>()
         {
@@ -33,14 +36,17 @@ public class OrderService(
 
     public async Task<OrderDto> Get(int id)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
+        
         var order = await ordersRepository.GetByIdAsync(id);
         return mapper.Map<OrderDto>(order);
     }
 
     public async Task<OrderDto> Create()
     {
+        await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
+        
         var user = await userService.GetCurrentUserAsync();
-
         var order = new Order
         {
             UserId = user.Id
@@ -50,8 +56,9 @@ public class OrderService(
 
     public async Task<OrderDto> Update(UpdateOrderRequest request)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
+        
         var order = await ordersRepository.GetByIdAsync(request.Id);
-
         if (!Enum.TryParse(request.OrderStatus, true, out OrderStatus orderStatus))
             throw new ArgumentException($"Статус {request.OrderStatus} не найден");
         order.UpdatedAt = DateTime.UtcNow;
@@ -94,12 +101,16 @@ public class OrderService(
 
     public async Task<List<OrderItemDto>> GetOrderItems(int orderId)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
+        
         var order = await ordersRepository.GetByIdAsync(orderId);
         return mapper.Map<List<OrderItemDto>>(order.OrderItems);
     }
 
     public async Task<OrderItemDto> AddOrUpdateOrderItem(AddOrUpdateOrderItemRequest request)
     {
+        await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
+        
         var order = await ordersRepository.GetByIdAsync(request.OrderId);
         if (order.Status == OrderStatus.New) order.Status = OrderStatus.Processing;
         if (order.Status != OrderStatus.Processing)

@@ -10,7 +10,7 @@ using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Controllers;
 
-[Authorize(Roles = nameof(Admin))]
+[Authorize]
 [Route("ordering/product")]
 public class ProductController(IProductService service) : ApiController
 {

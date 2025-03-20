@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AutoMapper;
 using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Identity;
@@ -21,5 +22,10 @@ public class MapperProfile : Profile
         CreateMap<ProductDto, Product>();
         
         CreateMap<User, UserDto>();
+        CreateMap<UserDto, User>();
+        
+        CreateMap<Role, RoleDto>();
+        CreateMap<RoleDto, Role>();
+        CreateMap<Claim, ClaimDto>();
     }
 }

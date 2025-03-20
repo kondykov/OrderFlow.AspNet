@@ -44,6 +44,15 @@ public class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IException
                 };
                 break;
             }
+            case { } when exception is UnauthorizedAccessException:
+            {
+                statusCode = 401;
+                response = new OperationResult
+                {
+                    Error = "Не авторизован",
+                };
+                break;
+            }
             case { } when exception is ArgumentException:
             {
                 statusCode = 400;
