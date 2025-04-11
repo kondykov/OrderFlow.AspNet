@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OrderFlow.Shared.Config;
@@ -23,7 +22,7 @@ public static class SharedModule
         var options = scope.ServiceProvider.GetRequiredService<IOptions<ShaderConfig>>().Value;
         if (options.UseSeeders)
         {
-            var seeders = new List<IDataSeeder>()
+            var seeders = new List<IDataSeeder>
             {
                 new RolesAndUsersSeeder(),
                 new ProductSeeder(),

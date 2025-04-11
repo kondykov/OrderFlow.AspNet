@@ -1,6 +1,4 @@
-﻿using OrderFlow.Shared.Models.Identity.DTOs;
-
-namespace OrderFlow.Shared.Models;
+﻿namespace OrderFlow.Shared.Models;
 
 public class OperationResult : OperationResult<string>
 {

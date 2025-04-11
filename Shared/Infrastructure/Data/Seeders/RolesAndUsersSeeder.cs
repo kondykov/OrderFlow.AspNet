@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using OrderFlow.Shared.Infrastructure.Data.Interfaces;
 using OrderFlow.Shared.Models.Identity;

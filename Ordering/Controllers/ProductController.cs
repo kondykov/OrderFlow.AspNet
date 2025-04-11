@@ -5,7 +5,6 @@ using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
-using OrderFlow.Shared.Models.Identity.Roles;
 using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Controllers;

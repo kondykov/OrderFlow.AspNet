@@ -1,7 +1,6 @@
 using AutoMapper;
 using OrderFlow.Identity.Interfaces;
 using OrderFlow.Ordering.Interfaces;
-using OrderFlow.Ordering.Models;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Extensions;
@@ -20,12 +19,12 @@ public class OrderService(
     IMapper mapper
 ) : IOrderService
 {
-    public async Task<PaginationResponse<List<OrderDto>>> GetOrders(int? pageNumber = 1, int? pageSize = 20)
+    public async Task<PaginationResponse<List<OrderDto>>> GetOrdersAsync(int? pageNumber = 1, int? pageSize = 20)
     {
         await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
         
         var paginationResponse = await ordersRepository.GetAllAsync(pageNumber, pageSize);
-        return new PaginationResponse<List<OrderDto>>()
+        return new PaginationResponse<List<OrderDto>>
         {
             Page = paginationResponse.Page,
             Pages = paginationResponse.Pages,
@@ -34,15 +33,14 @@ public class OrderService(
         };
     }
 
-    public async Task<OrderDto> Get(int id)
+    public async Task<Order> GetAsync(int id)
     {
         await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
         
-        var order = await ordersRepository.GetByIdAsync(id);
-        return mapper.Map<OrderDto>(order);
+        return await ordersRepository.GetByIdAsync(id);
     }
 
-    public async Task<OrderDto> Create()
+    public async Task<OrderDto> CreateAsync()
     {
         await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
         
@@ -54,7 +52,7 @@ public class OrderService(
         return mapper.Map<OrderDto>(await ordersRepository.CreateAsync(order));
     }
 
-    public async Task<OrderDto> Update(UpdateOrderRequest request)
+    public async Task<OrderDto> UpdateAsync(UpdateOrderRequest request)
     {
         await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
         
@@ -93,13 +91,13 @@ public class OrderService(
         return mapper.Map<OrderDto>(await ordersRepository.UpdateAsync(order));
     }
 
-    public Task<OrderItem> GetOrderItem(int id)
+    public Task<OrderItem> GetOrderItemAsync(int id)
     {
         throw new NotImplementedException();
         var order = ordersRepository.GetByIdAsync(id);
     }
 
-    public async Task<List<OrderItemDto>> GetOrderItems(int orderId)
+    public async Task<List<OrderItemDto>> GetOrderItemsAsync(int orderId)
     {
         await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
         
@@ -107,7 +105,7 @@ public class OrderService(
         return mapper.Map<List<OrderItemDto>>(order.OrderItems);
     }
 
-    public async Task<OrderItemDto> AddOrUpdateOrderItem(AddOrUpdateOrderItemRequest request)
+    public async Task<OrderItemDto> AddOrUpdateOrderItemAsync(AddOrUpdateOrderItemRequest request)
     {
         await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
         
@@ -136,7 +134,7 @@ public class OrderService(
         return mapper.Map<OrderItemDto>(await orderItemsRepository.UpdateAsync(orderItem));
     }
 
-    public async Task<Dictionary<OrderStatus, string>> GetOrderStatuses()
+    public async Task<Dictionary<OrderStatus, string>> GetOrderStatusesAsync()
     {
         return Enum.GetValues(typeof(OrderStatus))
             .Cast<OrderStatus>()

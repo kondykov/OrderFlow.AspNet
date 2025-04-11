@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Ordering.Interfaces;
-using OrderFlow.Ordering.Models;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Infrastructure.Data;
 using OrderFlow.Shared.Models;
@@ -31,6 +30,8 @@ public class OrdersRepository(DataContext context) : IOrdersRepository
     {
         return await context.Orders
             .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .Include(o => o.Payments)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
@@ -47,6 +48,8 @@ public class OrdersRepository(DataContext context) : IOrdersRepository
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize.Value);
         var orders = await context.Orders
             .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .Include(o => o.Payments)
             .Skip((int)((pageNumber - 1) * pageSize)!)
             .Take((int)pageSize!)
             .ToListAsync();

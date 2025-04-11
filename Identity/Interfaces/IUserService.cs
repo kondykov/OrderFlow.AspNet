@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.Data;
-using OrderFlow.Identity.Models;
 using OrderFlow.Identity.Models.Request;
 using OrderFlow.Identity.Models.Response;
 using OrderFlow.Shared.Models.Identity;

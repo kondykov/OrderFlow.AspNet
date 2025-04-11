@@ -64,18 +64,12 @@ public class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IException
             }
             default:
             {
+                // TODO: Изменить вывод об ошибке при релизе 
                 statusCode = 500;
-                #if DEBUG
                 response = new OperationResult
                 {
                     Error = $"Ошибка: {exception}",
                 };
-                #else
-                response = new OperationResult
-                {
-                    Error = $"Необработанная ошибка сервера",
-                };
-                #endif
                 break;
             }
         }

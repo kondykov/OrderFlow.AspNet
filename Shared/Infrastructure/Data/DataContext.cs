@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Ordering;
+using OrderFlow.Shared.Models.Payments;
 
 namespace OrderFlow.Shared.Infrastructure.Data;
 
@@ -17,6 +18,7 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,5 +48,10 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
             .HasOne(oi => oi.Product)
             .WithMany(p => p.OrderItems)
             .HasForeignKey(oi => oi.ProductId);
+
+        modelBuilder.Entity<Payment>()
+            .HasOne(p => p.Order)
+            .WithMany(o => o.Payments)
+            .HasForeignKey(p => p.OrderId);
     }
 }

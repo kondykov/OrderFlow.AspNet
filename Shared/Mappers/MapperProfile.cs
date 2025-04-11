@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using AutoMapper;
-using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Identity.DTOs;
 using OrderFlow.Shared.Models.Ordering;

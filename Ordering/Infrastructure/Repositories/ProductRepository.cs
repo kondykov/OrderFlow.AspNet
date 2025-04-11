@@ -22,7 +22,7 @@ public class ProductRepository(DataContext context) : IProductRepository
     public async Task<Product> GetByIdAsync(int id)
     {
         var product = await FindByIdAsync(id);
-        if (product == null) throw new EntityNotFoundException($"Продукт не найден");
+        if (product == null) throw new EntityNotFoundException("Продукт не найден");
         return product;
     }
 

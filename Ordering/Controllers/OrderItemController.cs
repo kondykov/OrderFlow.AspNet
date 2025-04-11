@@ -19,7 +19,7 @@ public class OrderItemController(IOrderService orderService) : ApiController
     {
         return Ok(new OperationResult<OrderItemDto>
         {
-            Data = await orderService.AddOrUpdateOrderItem(request)
+            Data = await orderService.AddOrUpdateOrderItemAsync(request)
         });
     }
 
@@ -29,7 +29,7 @@ public class OrderItemController(IOrderService orderService) : ApiController
     {
         return Ok(new OperationResult<List<OrderItemDto>>
         {
-            Data = await orderService.GetOrderItems(orderId)
+            Data = await orderService.GetOrderItemsAsync(orderId)
         });
     }
 }

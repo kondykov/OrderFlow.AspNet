@@ -7,6 +7,7 @@ using OrderFlow.Identity;
 using OrderFlow.Ordering;
 using OrderFlow.Shared;
 using OrderFlow.Shared.Infrastructure.Data;
+using Payments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,7 @@ builder.AddIdentityModule();
 builder.AddOrderingModule();
 builder.AddSwaggerModule();
 builder.AddSharedModule();
+builder.AddPaymentsModule();
 
 builder.Services.AddLogging(loggingBuilder =>
 {

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 using OrderFlow.Shared.Models.Identity;
+using OrderFlow.Shared.Models.Payments;
 
 namespace OrderFlow.Shared.Models.Ordering;
 
@@ -11,5 +12,6 @@ public class Order : TimeStamps
     [JsonIgnore] public User User { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.New;
     public string? Reason { get; set; } = null;
+    public IEnumerable<Payment>? Payments { get; set; } = null;
     public List<OrderItem> OrderItems { get; set; } = [];
 }

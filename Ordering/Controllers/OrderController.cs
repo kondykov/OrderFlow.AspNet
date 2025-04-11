@@ -1,7 +1,7 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OrderFlow.Identity.Models.Response;
 using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Extensions;
@@ -13,13 +13,13 @@ namespace OrderFlow.Ordering.Controllers;
 
 [Authorize]
 [Route("ordering/order")]
-public class OrderController(IOrderService service) : ApiController
+public class OrderController(IOrderService service, IMapper mapper) : ApiController
 {
     [HttpPost("create")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<OrderDto>))]
     public async Task<IActionResult> Create()
     {
-        return Ok(await service.Create());
+        return Ok(await service.CreateAsync());
     }
 
     [HttpGet("{id}")]
@@ -29,7 +29,7 @@ public class OrderController(IOrderService service) : ApiController
         if (!ModelState.IsValid) return BadRequest(ModelState);
         return Ok(new OperationResult<OrderDto>
         {
-            Data = await service.Get(id)
+            Data = mapper.Map<OrderDto>(await service.GetAsync(id))
         });
     }
 
@@ -37,9 +37,9 @@ public class OrderController(IOrderService service) : ApiController
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<PaginationResponse<List<OrderDto>>>))]
     public async Task<IActionResult> GetAll([FromQuery] int? page = 1, [FromQuery] int? pageSize = 20)
     {
-        return Ok(new OperationResult<PaginationResponse<List<OrderDto>>>()
+        return Ok(new OperationResult<PaginationResponse<List<OrderDto>>>
         {
-            Data = await service.GetOrders(page, pageSize)
+            Data = await service.GetOrdersAsync(page, pageSize)
         });
     }
 
@@ -49,7 +49,7 @@ public class OrderController(IOrderService service) : ApiController
     {
         return Ok(new OperationResult<OrderDto>
         {
-            Data = await service.Update(request)
+            Data = await service.UpdateAsync(request)
         });
     }
 
@@ -59,7 +59,7 @@ public class OrderController(IOrderService service) : ApiController
     {
         return Ok(new OperationResult<Dictionary<OrderStatus, string>>
         {
-            Data = await service.GetOrderStatuses()
+            Data = await service.GetOrderStatusesAsync()
         });
     }
 }
