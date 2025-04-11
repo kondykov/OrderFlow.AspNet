@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="Microsoft.AspNetCore">
+            <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.7\Microsoft.AspNetCore.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Ordering\Ordering.csproj" />
+      <ProjectReference Include="..\Shared\Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Yandex.Checkout.V3" Version="4.2.0" />
+    </ItemGroup>
+
+</Project>
