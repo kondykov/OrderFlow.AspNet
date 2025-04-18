@@ -37,6 +37,15 @@
 
     <ItemGroup>
       <Folder Include="Handlers\" />
+      <Folder Include="Handlers\Command\Security\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Handlers\Command\Security\ChangePasswordCommandHandler.cs" />
+      <Compile Remove="Handlers\Command\RegisterUserCommandHandler.cs" />
+      <Compile Remove="Handlers\Command\RegisterUserCommand.cs" />
+      <Compile Remove="Handlers\Command\LoginCommandHandler.cs" />
+      <Compile Remove="Handlers\Command\LoginCommand.cs" />
     </ItemGroup>
 
 </Project>

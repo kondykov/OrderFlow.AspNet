@@ -4,6 +4,8 @@
     build:
       context: .
       dockerfile: OrderFlow.AppHost/Dockerfile
+    ports:
+      - "5900:5000"
 
   orderflow.database:
     image: postgres:13.3
@@ -15,9 +17,3 @@
       - "5432:5432"
     container_name: orderflow.database
 
-
-  orderflow.api:
-    image: orderflow.api
-    build:
-      context: .
-      dockerfile: OrderFlow.API/Dockerfile
