@@ -2,75 +2,31 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using OrderFlow.Identity.Interfaces;
 using OrderFlow.Identity.Models.Request;
-using OrderFlow.Identity.Models.Response;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Identity.DTOs;
-using LoginRequest = OrderFlow.Identity.Models.Request.LoginRequest;
-using RegisterRequest = OrderFlow.Identity.Models.Request.RegisterRequest;
 
 namespace OrderFlow.Identity.Controllers;
 
 [Authorize]
 [Route("identity")]
-public class IdentityController(IUserService service, IMapper mapper, RoleManager<Role> roleManager) : ApiController
+public class SecurityController(
+    IUserService userService,
+    RoleManager<Role> roleManager,
+    IMapper mapper
+    ) : ApiController
 {
-    [AllowAnonymous]
-    [HttpPost("login")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<AuthenticationResponse>))]
-    public async Task<IActionResult> Login([FromBody] LoginRequest model)
-    {
-        if (!ModelState.IsValid) return UnprocessableEntity(ModelState);
-        return Ok(new OperationResult<AuthenticationResponse>
-        {
-            Data = await service.LoginAsync(model)
-        });
-    }
-
-    [AllowAnonymous]
-    [HttpPost("register")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult))]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest model)
-    {
-        if (!ModelState.IsValid) return UnprocessableEntity(new OperationResult());
-        await service.RegisterAsync(model);
-        return Ok(new OperationResult());
-    }
-
-    [AllowAnonymous]
-    [HttpPost("refresh")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<AuthenticationResponse>))]
-    public async Task<IActionResult> Refresh([FromBody] RefreshRequest model)
-    {
-        if (!ModelState.IsValid) return UnprocessableEntity(new OperationResult());
-        return Ok(new OperationResult<AuthenticationResponse>
-        {
-            Data = await service.RefreshTokenAsync(model)
-        });
-    }
-
-    [HttpGet("get-user-info")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDto))]
-    public async Task<IActionResult> GetInfo()
-    {
-        return Ok(new OperationResult<UserDto>
-        {
-            Data = await service.GetCurrentUserInfoAsync()
-        });
-    }
-
     [HttpPost("add-role")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<UserDto>))]
     public async Task<IActionResult> AddRole([FromBody] ChangeRoleRequest request)
     {
         return Ok(new OperationResult<UserDto>
         {
-            Data = await service.AddRoleAsync(request)
+            Data = await userService.AddRoleAsync(request)
         });
     }
 
@@ -80,7 +36,7 @@ public class IdentityController(IUserService service, IMapper mapper, RoleManage
     {
         return Ok(new OperationResult<UserDto>
         {
-            Data = await service.RemoveRoleAsync(request)
+            Data = await userService.RemoveRoleAsync(request)
         });
     }
 
@@ -90,7 +46,7 @@ public class IdentityController(IUserService service, IMapper mapper, RoleManage
     {
         return Ok(new OperationResult<UserDto>
         {
-            Data = await service.ChangePasswordAsync(request)
+            Data = await userService.ChangePasswordAsync(request)
         });
     }
 
@@ -111,7 +67,7 @@ public class IdentityController(IUserService service, IMapper mapper, RoleManage
                 Error = "Роль не найдена"
             });
 
-        await service.AddClaimToRole(claim, role);
+        await userService.AddClaimToRole(claim, role);
         return Ok(new OperationResult<UserDto>());
     }
 
@@ -132,7 +88,7 @@ public class IdentityController(IUserService service, IMapper mapper, RoleManage
                 Error = "Роль не найдена"
             });
 
-        await service.RemoveClaimFromRole(claim, role);
+        await userService.RemoveClaimFromRole(claim, role);
         return Ok(new OperationResult<UserDto>());
     }
 
@@ -142,7 +98,7 @@ public class IdentityController(IUserService service, IMapper mapper, RoleManage
     {
         return Ok(new OperationResult<List<RoleDto>>
         {
-            Data = await service.GetRolesAsync()
+            Data = await userService.GetRolesAsync()
         });
     }
 }

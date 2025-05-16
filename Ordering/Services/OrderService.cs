@@ -15,6 +15,7 @@ public class OrderService(
     IUserService userService,
     IProductService productService,
     IOrdersRepository ordersRepository,
+    ICurrentUserService currentUserService,
     IOrderItemsRepository orderItemsRepository,
     IMapper mapper
 ) : IOrderService
@@ -44,7 +45,7 @@ public class OrderService(
     {
         await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
         
-        var user = await userService.GetCurrentUserAsync();
+        var user = await currentUserService.GetCurrentUserAsync();
         var order = new Order
         {
             UserId = user.Id

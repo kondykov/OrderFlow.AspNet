@@ -23,7 +23,7 @@ public class OrderItemController(IOrderService orderService) : ApiController
         });
     }
 
-    [HttpGet("{orderId}")]
+    [HttpGet("{orderId:int}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<List<OrderItemDto>>))]
     public async Task<IActionResult> GetByOrderId(int orderId)
     {

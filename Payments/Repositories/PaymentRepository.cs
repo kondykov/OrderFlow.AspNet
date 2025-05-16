@@ -3,7 +3,6 @@ using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Infrastructure.Data;
 using OrderFlow.Shared.Models;
-using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Payments;
 using Payments.Interfaces;
 
