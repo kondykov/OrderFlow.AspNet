@@ -5,7 +5,7 @@
       context: .
       dockerfile: OrderFlow.AppHost/Dockerfile
     ports:
-      - "5900:5000"
+      - "5900:8080"
 
   orderflow.database:
     image: postgres:13.3
