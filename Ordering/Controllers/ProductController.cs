@@ -5,6 +5,7 @@ using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
+using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Controllers;
@@ -15,16 +16,9 @@ public class ProductController(IProductService service) : ApiController
 {
     [HttpGet("get-all")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<PaginationResponse<List<ProductDto>>>))]
-    public async Task<IActionResult> GetAll(int? page = 1, int? pageSize = 20)
+    public async Task<IActionResult> GetAll(int? page = 1, int? pageSize = 20, bool isActive = true, bool isSellable = true)
     {
-        return Ok(await service.GetAllAsync(page, pageSize));
-    }
-
-    [HttpGet("get-active")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<PaginationResponse<List<ProductDto>>>))]
-    public async Task<IActionResult> GetAllActive()
-    {
-        return Ok(await service.GetAllActiveAsync());
+        return Ok(await service.GetAllAsync(page, pageSize, isActive, isSellable));
     }
 
     [HttpPost("add")]

@@ -11,4 +11,7 @@ public class Product
     public decimal Price { get; set; }
     [JsonIgnore] public List<OrderItem> OrderItems { get; set; } = [];
     public bool IsActive { get; set; } = true;
+    public bool IsSellable { get; set; } = false;
+    public List<Product>? Ingredients { get; set; }
+    public double Weight { get; set; } = 0;
 }

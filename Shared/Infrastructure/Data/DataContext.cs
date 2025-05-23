@@ -53,5 +53,10 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
             .HasOne(p => p.Order)
             .WithMany(o => o.Payments)
             .HasForeignKey(p => p.OrderId);
+        
+        modelBuilder.Entity<Product>()
+            .HasMany(p => p.Ingredients)
+            .WithMany()
+            .UsingEntity(pi => pi.ToTable("ProductIngredients"));
     }
 }
