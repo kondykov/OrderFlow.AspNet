@@ -1,22 +1,23 @@
-using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using OrderFlow.Identity.Interfaces;
 using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Models;
-using OrderFlow.Shared.Models.Identity;
+using OrderFlow.Shared.Models.Identity.Roles;
 using OrderFlow.Shared.Models.Ordering;
-using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Services;
 
-public class ProductService(IProductRepository productRepository, IOrderItemsRepository orderItemsRepository, IUserService userService, IMapper mapper)
+public class ProductService(
+    IProductRepository productRepository,
+    IOrderItemsRepository orderItemsRepository,
+    IUserService userService
+)
     : IProductService
 {
     public async Task<Product> AddAsync(AddProductRequest request)
     {
-        await userService.RequireClaimAsync(SystemClaims.CanCreateProduct);
-        
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
 
         var product = new Product
@@ -32,21 +33,20 @@ public class ProductService(IProductRepository productRepository, IOrderItemsRep
 
     public async Task<Product> UpdateAsync(UpdateProductRequest request)
     {
-        await userService.RequireClaimAsync(SystemClaims.CanEditProduct);
-
         var product = await productRepository.GetByIdAsync(request.Id);
         if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
         return await productRepository.UpdateAsync(product);
     }
 
-    public async Task<PaginationResponse<List<Product>>> GetAllAsync(int? page = 1, int? pageSize = 20, bool? isActive = null, bool? isSellable = null)
+    [Authorize(Roles = nameof(Manager))]
+    public async Task<PaginationResponse<List<Product>>> GetAllAsync(
+        int? page = 1,
+        int? pageSize = 20,
+        bool? isActive = null,
+        bool? isSellable = null
+    )
     {
         return await productRepository.GetAllAsync(page, pageSize, isActive, isSellable);
-    }
-
-    public async Task<List<Product>> GetAllActiveAsync()
-    {
-        return await productRepository.GetActivesAsync();
     }
 
     public async Task<Product?> FindByIdAsync(int id)
@@ -63,14 +63,42 @@ public class ProductService(IProductRepository productRepository, IOrderItemsRep
 
     public async Task<bool> DeleteAsync(RemoveProductRequest request)
     {
-        await userService.RequireClaimAsync(SystemClaims.CanDeleteProduct);
-        
         var product = await productRepository.FindByIdAsync(request.ProductId);
         if (product == null) throw new EntityNotFoundException("Продукт не найден");
-        if (await orderItemsRepository.CheckProductIsUsedAsync(product.Id))
+        if (await orderItemsRepository.CheckProductIsUsedAsync(product.Id) ||
+            (await GetUsingAsComponent(product.Id)).Count > 0)
             throw new AccessDeniedException(
-                "Нельзя удалять продукт, который уже используется в заказах. Если необходимо вывести продукт из продажи, то установите продукту статус \"Неактивен\"");
+                "Нельзя удалять продукт, который уже используется в заказах или является компонентом другого продукта");
         await productRepository.DeleteAsync(product);
         return true;
+    }
+
+    public async Task<Product> AddComponent(int productId, int componentId)
+    {
+        if (productId == componentId)
+            throw new ArgumentException("Циклическая зависимость: продукт и компонент являются одной сущностью");
+        var product = await productRepository.GetByIdAsync(productId);
+        var component = await productRepository.GetByIdAsync(componentId);
+
+        product.Components.Add(component);
+        await productRepository.UpdateAsync(product);
+        return product;
+    }
+
+    public async Task<Product> RemoveComponent(int productId, int componentId)
+    {
+        var product = await productRepository.GetByIdAsync(productId);
+        var component = await productRepository.GetByIdAsync(componentId);
+
+        if (product.Components.All(c => c.Id != componentId)) return product;
+        product.Components.Remove(component);
+        await productRepository.UpdateAsync(product);
+        return product;
+    }
+
+    public async Task<List<Product>> GetUsingAsComponent(int productId)
+    {
+        var product = await productRepository.GetByIdAsync(productId);
+        return await productRepository.GetUsingAsComponentAsync(product);
     }
 }

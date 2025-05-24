@@ -7,7 +7,6 @@ using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Ordering;
-using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Services;
 
@@ -20,43 +19,35 @@ public class OrderService(
     IMapper mapper
 ) : IOrderService
 {
-    public async Task<PaginationResponse<List<OrderDto>>> GetOrdersAsync(int? pageNumber = 1, int? pageSize = 20)
+    public async Task<PaginationResponse<List<Order>>> GetOrdersAsync(int? pageNumber = 1, int? pageSize = 20)
     {
-        await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
-        
         var paginationResponse = await ordersRepository.GetAllAsync(pageNumber, pageSize);
-        return new PaginationResponse<List<OrderDto>>
+        return new PaginationResponse<List<Order>>
         {
             Page = paginationResponse.Page,
             Pages = paginationResponse.Pages,
             PageSize = paginationResponse.PageSize,
-            Data = mapper.Map<List<OrderDto>>(paginationResponse.Data),
+            Data =paginationResponse.Data,
         };
     }
 
-    public async Task<Order> GetAsync(int id)
+    public async Task<Order> GetByIdAsync(int id)
     {
-        await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
-        
         return await ordersRepository.GetByIdAsync(id);
     }
 
-    public async Task<OrderDto> CreateAsync()
+    public async Task<Order> CreateAsync()
     {
-        await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
-        
         var user = await currentUserService.GetCurrentUserAsync();
         var order = new Order
         {
             UserId = user.Id
         };
-        return mapper.Map<OrderDto>(await ordersRepository.CreateAsync(order));
+        return await ordersRepository.CreateAsync(order);
     }
 
-    public async Task<OrderDto> UpdateAsync(UpdateOrderRequest request)
+    public async Task<Order> UpdateAsync(UpdateOrderRequest request)
     {
-        await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
-        
         var order = await ordersRepository.GetByIdAsync(request.Id);
         if (!Enum.TryParse(request.OrderStatus, true, out OrderStatus orderStatus))
             throw new ArgumentException($"Статус {request.OrderStatus} не найден");
@@ -89,27 +80,17 @@ public class OrderService(
                 order.Status = orderStatus;
                 break;
         }
-        return mapper.Map<OrderDto>(await ordersRepository.UpdateAsync(order));
+        return await ordersRepository.UpdateAsync(order);
     }
 
-    public Task<OrderItem> GetOrderItemAsync(int id)
+    public async Task<List<OrderItem>> GetOrderItemsAsync(int orderId)
     {
-        throw new NotImplementedException();
-        var order = ordersRepository.GetByIdAsync(id);
-    }
-
-    public async Task<List<OrderItemDto>> GetOrderItemsAsync(int orderId)
-    {
-        await userService.RequireClaimAsync(SystemClaims.CanGetOrder);
-        
         var order = await ordersRepository.GetByIdAsync(orderId);
-        return mapper.Map<List<OrderItemDto>>(order.OrderItems);
+        return order.OrderItems;
     }
 
-    public async Task<OrderItemDto> AddOrUpdateOrderItemAsync(AddOrUpdateOrderItemRequest request)
+    public async Task<OrderItem> AddOrUpdateOrderItemAsync(AddOrUpdateOrderItemRequest request)
     {
-        await userService.RequireClaimAsync(SystemClaims.CanEditOrder);
-        
         var order = await ordersRepository.GetByIdAsync(request.OrderId);
         if (order.Status == OrderStatus.New) order.Status = OrderStatus.Processing;
         if (order.Status != OrderStatus.Processing)
@@ -125,14 +106,14 @@ public class OrderService(
             {
                 OrderId = order.Id,
                 Quantity = request.Quantity,
-                ProductId = product.Id
+                ProductId = product.Id,
             };
-            return mapper.Map<OrderItemDto>(await orderItemsRepository.AddAsync(orderItem));
+            return await orderItemsRepository.AddAsync(orderItem);
         }
 
         orderItem.Quantity = request.Quantity;
         orderItem.UpdatedAt = DateTime.UtcNow;
-        return mapper.Map<OrderItemDto>(await orderItemsRepository.UpdateAsync(orderItem));
+        return await orderItemsRepository.UpdateAsync(orderItem);
     }
 
     public async Task<Dictionary<OrderStatus, string>> GetOrderStatusesAsync()

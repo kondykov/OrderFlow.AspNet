@@ -55,8 +55,8 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
             .HasForeignKey(p => p.OrderId);
         
         modelBuilder.Entity<Product>()
-            .HasMany(p => p.Ingredients)
-            .WithMany()
-            .UsingEntity(pi => pi.ToTable("ProductIngredients"));
+            .HasMany(p => p.Components)
+            .WithMany(p => p.UsedIn)
+            .UsingEntity(pc => pc.ToTable("ProductComponents"));
     }
 }

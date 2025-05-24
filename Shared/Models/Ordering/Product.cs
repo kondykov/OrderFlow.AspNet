@@ -12,6 +12,7 @@ public class Product
     [JsonIgnore] public List<OrderItem> OrderItems { get; set; } = [];
     public bool IsActive { get; set; } = true;
     public bool IsSellable { get; set; } = false;
-    public List<Product>? Ingredients { get; set; }
+    public List<Product> Components { get; set; } = [];
+    public List<Product> UsedIn { get; set; } = [];
     public double Weight { get; set; } = 0;
 }

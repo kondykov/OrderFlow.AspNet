@@ -41,30 +41,23 @@ public class ProductRepository(DataContext context) : IProductRepository
         if (currentPageSize < 1) currentPageSize = 20;
 
         var query = context.Products
-            .Include(p => p.Ingredients)
+            .Include(p => p.Components)
             .AsQueryable();
 
         if (isActive.HasValue) query = query.Where(p => p.IsActive == isActive.Value);
         if (isSellable.HasValue) query = query.Where(p => p.IsSellable == isSellable.Value);
 
-        var products = await query
-            .OrderByDescending(p => p.Id)
-            .Skip((currentPage - 1) * currentPageSize)
-            .Take(currentPageSize)
-            .ToListAsync();
-
         return new PaginationResponse<List<Product>>
         {
             Pages = 0,
-            Data = products,
+            Data = await query
+                .OrderByDescending(p => p.Id)
+                .Skip((currentPage - 1) * currentPageSize)
+                .Take(currentPageSize)
+                .ToListAsync(),
             Page = currentPage,
             PageSize = currentPageSize
         };
-    }
-
-    public async Task<List<Product>> GetActivesAsync()
-    {
-        return await context.Products.Where(p => p.IsActive).ToListAsync();
     }
 
     public async Task<List<Product>> FindByCategoryAsync(string category)
@@ -80,8 +73,8 @@ public class ProductRepository(DataContext context) : IProductRepository
     public async Task<Product> UpdateAsync(Product product)
     {
         var productToUpdate = context.Products.FirstOrDefault(p => p.Id == product.Id);
-        if (productToUpdate != null) throw new EntityNotFoundException("Продукт не найден");
-        context.Entry<Product>(productToUpdate).CurrentValues.SetValues(product);
+        if (productToUpdate == null) throw new EntityNotFoundException("Обновляемый продукт не найден");
+        context.Entry(productToUpdate).CurrentValues.SetValues(product);
         await context.SaveChangesAsync();
         return product;
     }
@@ -92,5 +85,14 @@ public class ProductRepository(DataContext context) : IProductRepository
             throw new EntityNotFoundException("Продукт не найден");
         context.Products.Remove(product);
         await context.SaveChangesAsync();
+    }
+
+    public async Task<List<Product>> GetUsingAsComponentAsync(Product targetProduct)
+    {
+        var product = await context.Products
+            .Include(p => p.UsedIn)
+            .FirstAsync(p => p.Id == targetProduct.Id);
+        
+        return product.UsedIn;
     }
 }

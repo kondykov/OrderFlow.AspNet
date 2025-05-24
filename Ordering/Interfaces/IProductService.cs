@@ -1,7 +1,6 @@
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Ordering;
-using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Interfaces;
 
@@ -13,4 +12,8 @@ public interface IProductService
     Task<Product?> FindByIdAsync(int id);
     Task<Product> GetByIdAsync(int id);
     Task<bool> DeleteAsync(RemoveProductRequest productId);
+    
+    Task<Product> AddComponent(int productId, int componentId);
+    Task<Product> RemoveComponent(int productId, int componentId);
+    Task<List<Product>> GetUsingAsComponent(int productId);
 }

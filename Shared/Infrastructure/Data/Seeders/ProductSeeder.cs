@@ -24,7 +24,7 @@ public class ProductSeeder : IDataSeeder
         products.Add(new Product
         {
             Name = "Составной продукт", Price = (decimal)199.99, IsActive = false,
-            Ingredients = [products[0], products[3]]
+            Components = [products[0], products[3]]
         });
 
         foreach (var product in products.Where(product => !context.Products.Any(p => p.Name == product.Name)))
