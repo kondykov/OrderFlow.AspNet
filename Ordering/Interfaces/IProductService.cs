@@ -1,17 +1,19 @@
 using OrderFlow.Ordering.Models.Requests;
+using OrderFlow.Shared.Models;
 using OrderFlow.Shared.Models.Ordering;
-using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Interfaces;
 
 public interface IProductService
 {
-    Task<ProductDto> AddAsync(AddProductRequest product);
-    Task<ProductDto> UpdateAsync(UpdateProductRequest request);
-    Task<List<ProductDto>> GetAllAsync(int? page = 1, int? pageSize = 20);
-    Task<List<Product>> GetAllActiveAsync();
-    Task<ProductDto> FindByIdAsync(int id);
-    Task<ProductDto> GetByIdAsync(int id);
-    Task<List<ProductDto>> GetByNameAsync(string name);
+    Task<Product> AddAsync(AddProductRequest product);
+    Task<Product> UpdateAsync(UpdateProductRequest request);
+    Task<PaginationResponse<List<Product>>> GetAllAsync(int? page = 1, int? pageSize = 20, bool? isActive = null, bool? isSellable = null);
+    Task<Product?> FindByIdAsync(int id);
+    Task<Product> GetByIdAsync(int id);
     Task<bool> DeleteAsync(RemoveProductRequest productId);
+    
+    Task<Product> AddComponent(int productId, int componentId);
+    Task<Product> RemoveComponent(int productId, int componentId);
+    Task<List<Product>> GetUsingAsComponent(int productId);
 }

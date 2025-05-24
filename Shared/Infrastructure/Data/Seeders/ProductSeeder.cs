@@ -19,8 +19,13 @@ public class ProductSeeder : IDataSeeder
             new() { Name = "Продукт 2", Price = 137 },
             new() { Name = "Продукт 3", Price = 149 },
             new() { Name = "Продукт с копейками", Price = (decimal)199.99 },
-            new() { Name = "Неактивный продукт с копейками", Price = (decimal)199.99, IsActive = false},
+            new() { Name = "Неактивный продукт с копейками", Price = (decimal)199.99, IsActive = false }
         ];
+        products.Add(new Product
+        {
+            Name = "Составной продукт", Price = (decimal)199.99, IsActive = false,
+            Components = [products[0], products[3]]
+        });
 
         foreach (var product in products.Where(product => !context.Products.Any(p => p.Name == product.Name)))
             await context.Products.AddAsync(product);

@@ -26,7 +26,7 @@ public class PaymentsController(IPaymentService service, IOrderService orderServ
     [HttpGet("debug")]
     public async Task<IActionResult> Debug()
     {
-        var order = await orderService.GetAsync(2);
+        var order = await orderService.GetByIdAsync(2);
         return Ok(service.Create(mapper.Map<Order>(order), 123));
     }
 }

@@ -5,6 +5,7 @@ using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
+using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Controllers;
@@ -13,35 +14,47 @@ namespace OrderFlow.Ordering.Controllers;
 [Route("ordering/product")]
 public class ProductController(IProductService service) : ApiController
 {
-    [HttpGet("get-all")]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<PaginationResponse<List<ProductDto>>>))]
-    public async Task<IActionResult> GetAll(int? page = 1, int? pageSize = 20)
+    public async Task<IActionResult> GetAll(int? page = 1, int? pageSize = 20, bool? isActive = null, bool? isSellable = null)
     {
-        return Ok(await service.GetAllAsync(page, pageSize));
+        return Ok(new OperationResult<PaginationResponse<List<Product>>>()
+        {
+            Data = await service.GetAllAsync(page, pageSize, isActive, isSellable)
+        });
+    }
+    
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<PaginationResponse<List<ProductDto>>>))]
+    public async Task<IActionResult> Get(int id)
+    {
+        return Ok(new OperationResult<Product>()
+        {
+            Data = await service.GetByIdAsync(id)
+        });
     }
 
-    [HttpGet("get-active")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<PaginationResponse<List<ProductDto>>>))]
-    public async Task<IActionResult> GetAllActive()
-    {
-        return Ok(await service.GetAllActiveAsync());
-    }
-
-    [HttpPost("add")]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<ProductDto>))]
     public async Task<IActionResult> Add([FromBody] AddProductRequest request)
     {
-        return Ok(await service.AddAsync(request));
+        return Ok(new OperationResult<Product>()
+        {
+            Data = await service.AddAsync(request)
+        });
     }
 
-    [HttpPut("update")]
+    [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<ProductDto>))]
     public async Task<IActionResult> Update([FromBody] UpdateProductRequest request)
     {
-        return Ok(await service.UpdateAsync(request));
+        return Ok(new OperationResult<Product>()
+        {
+            Data = await service.UpdateAsync(request)
+        });
     }
 
-    [HttpDelete("delete")]
+    [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<ProductDto>))]
     public async Task<IActionResult> Delete([FromBody] RemoveProductRequest request)
     {

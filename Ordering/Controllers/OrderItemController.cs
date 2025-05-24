@@ -5,6 +5,7 @@ using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
+using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Ordering.DTOs;
 
 namespace OrderFlow.Ordering.Controllers;
@@ -17,7 +18,7 @@ public class OrderItemController(IOrderService orderService) : ApiController
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<OrderItemDto>))]
     public async Task<IActionResult> AddOrUpdate([FromBody] AddOrUpdateOrderItemRequest request)
     {
-        return Ok(new OperationResult<OrderItemDto>
+        return Ok(new OperationResult<OrderItem>
         {
             Data = await orderService.AddOrUpdateOrderItemAsync(request)
         });
@@ -27,7 +28,7 @@ public class OrderItemController(IOrderService orderService) : ApiController
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<List<OrderItemDto>>))]
     public async Task<IActionResult> GetByOrderId(int orderId)
     {
-        return Ok(new OperationResult<List<OrderItemDto>>
+        return Ok(new OperationResult<List<OrderItem>>
         {
             Data = await orderService.GetOrderItemsAsync(orderId)
         });

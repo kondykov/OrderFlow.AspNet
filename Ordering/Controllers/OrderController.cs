@@ -13,7 +13,7 @@ namespace OrderFlow.Ordering.Controllers;
 
 [Authorize]
 [Route("ordering/order")]
-public class OrderController(IOrderService service, IMapper mapper) : ApiController
+public class OrderController(IOrderService service) : ApiController
 {
     [HttpPost("create")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<OrderDto>))]
@@ -22,22 +22,22 @@ public class OrderController(IOrderService service, IMapper mapper) : ApiControl
         return Ok(await service.CreateAsync());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<OrderDto>))]
     public async Task<IActionResult> Get(int id)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        return Ok(new OperationResult<OrderDto>
+        return Ok(new OperationResult<Order>
         {
-            Data = mapper.Map<OrderDto>(await service.GetAsync(id))
+            Data = await service.GetByIdAsync(id)
         });
     }
 
-    [HttpGet("get-all")]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<PaginationResponse<List<OrderDto>>>))]
     public async Task<IActionResult> GetAll([FromQuery] int? page = 1, [FromQuery] int? pageSize = 20)
     {
-        return Ok(new OperationResult<PaginationResponse<List<OrderDto>>>
+        return Ok(new OperationResult<PaginationResponse<List<Order>>>
         {
             Data = await service.GetOrdersAsync(page, pageSize)
         });
@@ -47,7 +47,7 @@ public class OrderController(IOrderService service, IMapper mapper) : ApiControl
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<OrderDto>))]
     public async Task<IActionResult> Update([FromBody] UpdateOrderRequest request)
     {
-        return Ok(new OperationResult<OrderDto>
+        return Ok(new OperationResult<Order>
         {
             Data = await service.UpdateAsync(request)
         });

@@ -15,7 +15,7 @@ public class CurrentUserService(
     public async Task<User> GetCurrentUserAsync()
     {
         var claimsPrincipal = httpContextAccessor.HttpContext?.User;
-        if (claimsPrincipal == null || claimsPrincipal.Identity!.IsAuthenticated)
+        if (claimsPrincipal == null || !claimsPrincipal.Identity!.IsAuthenticated)
             throw new UnauthorizedAccessException();
         var userId = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await userManager.FindByIdAsync(userId ?? throw new UnauthorizedAccessException());
