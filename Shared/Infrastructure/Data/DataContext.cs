@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Payments;
+using OrderFlow.Shared.Models.Warehouse;
 
 namespace OrderFlow.Shared.Infrastructure.Data;
 
@@ -19,6 +20,8 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
     public DbSet<Product> Products { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Payment> Payments { get; set; }
+    public DbSet<ProductReserve> ProductReserves { get; set; }
+    public DbSet<ProductReserveSettings> ProductReserveSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

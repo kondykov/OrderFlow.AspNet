@@ -26,6 +26,7 @@ public class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IException
                 };
                 break;
             }
+            case { } when exception is NullReferenceException:
             case { } when exception is EntityNotFoundException:
             {
                 statusCode = 404;

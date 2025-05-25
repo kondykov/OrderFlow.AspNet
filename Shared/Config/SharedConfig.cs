@@ -1,6 +1,6 @@
 namespace OrderFlow.Shared.Config;
 
-public class ShaderConfig
+public class SharedConfig
 {
     public bool UseSeeders { get; set; } = false;
 }

@@ -35,6 +35,7 @@
       <ProjectReference Include="..\Ordering\Ordering.csproj" />
       <ProjectReference Include="..\Payments\Payments.csproj" />
       <ProjectReference Include="..\Shared\Shared.csproj" />
+      <ProjectReference Include="..\Warehouse\Warehouse.csproj" />
     </ItemGroup>
 
 </Project>
