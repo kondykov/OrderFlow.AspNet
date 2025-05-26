@@ -1,7 +1,8 @@
-using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OrderFlow.Ordering.Events;
 using OrderFlow.Ordering.Interfaces;
 using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Extensions;
@@ -13,12 +14,13 @@ namespace OrderFlow.Ordering.Controllers;
 
 [Authorize]
 [Route("ordering/order")]
-public class OrderController(IOrderService service) : ApiController
+public class OrderController(IOrderService service, IMediator mediator) : ApiController
 {
     [HttpPost("create")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult<OrderDto>))]
     public async Task<IActionResult> Create()
     {
+        await mediator.Publish(new OrderCreatedEvent() { OrderId = 1 });
         return Ok(await service.CreateAsync());
     }
 

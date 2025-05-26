@@ -5,7 +5,6 @@ using OrderFlow.Ordering.Models.Requests;
 using OrderFlow.Shared.Exceptions;
 using OrderFlow.Shared.Extensions;
 using OrderFlow.Shared.Models;
-using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Ordering;
 
 namespace OrderFlow.Ordering.Services;

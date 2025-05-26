@@ -5,6 +5,7 @@ using Newtonsoft.Json.Serialization;
 using OrderFlow.AppHost;
 using OrderFlow.Identity;
 using OrderFlow.Ordering;
+using OrderFlow.Ordering.Events;
 using OrderFlow.Shared;
 using OrderFlow.Shared.Infrastructure.Data;
 using Payments;
@@ -33,6 +34,14 @@ builder.AddOrderingModule();
 builder.AddSwaggerModule();
 builder.AddSharedModule();
 builder.AddPaymentsModule();
+
+builder.Services.AddMediatR(cfg => 
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(OrderingModule).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(IdentityModule).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(PaymentsModule).Assembly);
+});
 
 builder.Services.AddLogging(loggingBuilder =>
 {
