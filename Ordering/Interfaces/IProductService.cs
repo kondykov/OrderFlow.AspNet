@@ -13,7 +13,6 @@ public interface IProductService
     Task<Product> GetByIdAsync(int id);
     Task<bool> DeleteAsync(RemoveProductRequest productId);
     
-    Task<Product> AddComponent(int productId, int componentId);
-    Task<Product> RemoveComponent(int productId, int componentId);
-    Task<List<Product>> GetUsingAsComponent(int productId);
+    Task<Product> AddComponent(int productId, int componentId, int quantity);
+    Task<Product> RemoveComponent(int productId, int componentId, int quantity);
 }

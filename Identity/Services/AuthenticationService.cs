@@ -58,7 +58,7 @@ public class AuthenticationService(
 
         if (user.Succeeded) return true;
 
-        throw new Exception($"Произошла ошибка при создании пользователя: {string.Join(", ", user.Errors)}");
+        throw new ArgumentException($"Произошла ошибка при создании пользователя: {string.Join(", ", user.Errors)}");
     }
 
     public async Task<AuthenticationResponse> RefreshTokenAsync(RefreshRequest request)

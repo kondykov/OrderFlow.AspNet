@@ -12,21 +12,12 @@ namespace OrderFlow.Ordering.Controllers;
 [Route("ordering/product/component")]
 public class ProductComponentController(IProductService service) : ApiController
 {
-    [HttpGet("get-using/{id:int}")]
-    public async Task<IActionResult> Get(int id)
-    {
-        return Ok(new OperationResult<List<Product>>()
-        {
-            Data = await service.GetUsingAsComponent(id),            
-        });
-    }
-
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] ProductComponentRequest request)
     {
         return Ok(new OperationResult<Product>()
         {
-            Data = await service.AddComponent(request.ProductId, request.ComponentId)
+            Data = await service.AddComponent(request.ProductId, request.ComponentId, request.Quantity)
         });
     }
 
@@ -35,7 +26,7 @@ public class ProductComponentController(IProductService service) : ApiController
     {
         return Ok(new OperationResult<Product>()
         {
-            Data = await service.RemoveComponent(request.ProductId, request.ComponentId)
+            Data = await service.RemoveComponent(request.ProductId, request.ComponentId, request.Quantity)
         });
     }
 }

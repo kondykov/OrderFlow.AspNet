@@ -10,6 +10,7 @@ public interface IOrderService
     Task<Order> GetByIdAsync(int id);
     Task<Order> CreateAsync();
     Task<Order> UpdateAsync(UpdateOrderRequest request);
+    Task<Order> NextStatusAsync(UpdateOrderRequest request);
     Task<List<OrderItem>> GetOrderItemsAsync(int orderId);
     Task<OrderItem> AddOrUpdateOrderItemAsync(AddOrUpdateOrderItemRequest request);
     Task<Dictionary<OrderStatus, string>> GetOrderStatusesAsync();

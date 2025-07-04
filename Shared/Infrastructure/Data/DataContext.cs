@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OrderFlow.Shared.Models.Identity;
 using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Payments;
@@ -43,7 +45,7 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
             .HasOne(o => o.User)
             .WithMany(u => u.Orders)
             .HasForeignKey(o => o.UserId);
-        
+
         modelBuilder.Entity<OrderItem>()
             .HasOne(oi => oi.Product)
             .WithMany(p => p.OrderItems)
@@ -53,10 +55,19 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
             .HasOne(p => p.Order)
             .WithMany(o => o.Payments)
             .HasForeignKey(p => p.OrderId);
-        
-        modelBuilder.Entity<Product>()
-            .HasMany(p => p.Components)
-            .WithMany(p => p.UsedIn)
-            .UsingEntity(pc => pc.ToTable("ProductComponents"));
+
+        modelBuilder.Entity<Product>().Property(product => product.Components)
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
+                v => JsonSerializer.Deserialize<List<ProductComponent>>(v, (JsonSerializerOptions)null)
+            )
+            .Metadata.SetValueComparer(
+                new ValueComparer<List<ProductComponent>>(
+                    (c1, c2) => c1.SequenceEqual(c2),
+                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    c => c.ToList()
+                )
+            );
     }
 }

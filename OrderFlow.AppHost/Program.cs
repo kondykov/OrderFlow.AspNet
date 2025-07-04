@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using Npgsql;
 using OrderFlow.AppHost;
 using OrderFlow.Identity;
 using OrderFlow.Ordering;
@@ -13,8 +14,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMemoryCache();
-builder.Services.AddDbContext<DataContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default") ?? string.Empty));
+builder.Services.AddDbContextPool<DataContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("Default") ?? string.Empty;
+
+    var npgsqlBuilder = new NpgsqlDataSourceBuilder(connectionString);
+    npgsqlBuilder.EnableDynamicJson();
+    var dataSource = npgsqlBuilder.Build();
+    options.UseNpgsql(dataSource, npgsqlOptions => { npgsqlOptions.EnableRetryOnFailure(); });
+}, 128);
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>

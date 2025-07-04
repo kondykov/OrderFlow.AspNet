@@ -48,6 +48,7 @@ public class OrderService(
 
     public async Task<Order> UpdateAsync(UpdateOrderRequest request)
     {
+        throw new NotImplementedException();
         var order = await ordersRepository.GetByIdAsync(request.Id);
         if (!Enum.TryParse(request.OrderStatus, true, out OrderStatus orderStatus))
             throw new ArgumentException($"Статус {request.OrderStatus} не найден");
@@ -80,6 +81,14 @@ public class OrderService(
                 order.Status = orderStatus;
                 break;
         }
+        return await ordersRepository.UpdateAsync(order);
+    }
+
+    public async Task<Order> NextStatusAsync(UpdateOrderRequest request)
+    {
+        var order = await ordersRepository.GetByIdAsync(request.Id);
+        order.Next();
+        order.UpdatedAt = DateTime.UtcNow;
         return await ordersRepository.UpdateAsync(order);
     }
 

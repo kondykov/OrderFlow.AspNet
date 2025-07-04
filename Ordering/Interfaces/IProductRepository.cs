@@ -20,5 +20,4 @@ public interface IProductRepository
     Task<List<Product>> FindByNameAsync(string name);
     Task<Product> UpdateAsync(Product product);
     Task DeleteAsync(Product product);
-    Task<List<Product>> GetUsingAsComponentAsync(Product product);
 }

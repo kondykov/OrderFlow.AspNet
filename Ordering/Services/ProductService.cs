@@ -18,7 +18,7 @@ public class ProductService(
 {
     public async Task<Product> AddAsync(AddProductRequest request)
     {
-        if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
+        if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0.");
 
         var product = new Product
         {
@@ -34,7 +34,7 @@ public class ProductService(
     public async Task<Product> UpdateAsync(UpdateProductRequest request)
     {
         var product = await productRepository.GetByIdAsync(request.Id);
-        if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0");
+        if (request.Price <= 0) throw new ArgumentException("Цена не может быть меньше 0.");
         return await productRepository.UpdateAsync(product);
     }
 
@@ -57,48 +57,61 @@ public class ProductService(
     public async Task<Product> GetByIdAsync(int id)
     {
         var product = await productRepository.GetByIdAsync(id);
-        if (product == null) throw new EntityNotFoundException("Продукт не найден");
+        if (product == null) throw new EntityNotFoundException("Продукт не найден.");
         return product;
     }
 
     public async Task<bool> DeleteAsync(RemoveProductRequest request)
     {
         var product = await productRepository.FindByIdAsync(request.ProductId);
-        if (product == null) throw new EntityNotFoundException("Продукт не найден");
-        if (await orderItemsRepository.CheckProductIsUsedAsync(product.Id) ||
-            (await GetUsingAsComponent(product.Id)).Count > 0)
+        if (product == null) throw new EntityNotFoundException("Продукт не найден.");
+        if (await orderItemsRepository.CheckProductIsUsedAsync(product.Id) /*||
+            (await GetUsingAsComponent(product.Id)).Count > 0*/)
             throw new AccessDeniedException(
-                "Нельзя удалять продукт, который уже используется в заказах или является компонентом другого продукта");
+                "Нельзя удалять продукт, который уже используется в заказах или является компонентом другого продукта.");
         await productRepository.DeleteAsync(product);
         return true;
     }
 
-    public async Task<Product> AddComponent(int productId, int componentId)
+    public async Task<Product> AddComponent(int productId, int componentId, int quantity)
     {
         if (productId == componentId)
-            throw new ArgumentException("Циклическая зависимость: продукт и компонент являются одной сущностью");
+            throw new ArgumentException("Циклическая зависимость: продукт и компонент являются одной сущностью.");
         var product = await productRepository.GetByIdAsync(productId);
         var component = await productRepository.GetByIdAsync(componentId);
+        var productComponent = product.Components.FirstOrDefault(pc => pc.ProductId == component.Id);
+        if (quantity <= 0) throw new ArgumentException("Количество должно быть больше 0.");
+        if (productComponent == null)
+        {
+            productComponent = new ProductComponent
+            {
+                ProductId = component.Id,
+                Quantity = quantity
+            };
+            product.Components.Add(productComponent);
+        }
+        else
+        {
+            productComponent.Quantity += quantity;
+        }
 
-        product.Components.Add(component);
         await productRepository.UpdateAsync(product);
         return product;
     }
 
-    public async Task<Product> RemoveComponent(int productId, int componentId)
+    public async Task<Product> RemoveComponent(int productId, int componentId, int quantity)
     {
         var product = await productRepository.GetByIdAsync(productId);
         var component = await productRepository.GetByIdAsync(componentId);
+        var productComponent = product.Components.FirstOrDefault(pc => pc.ProductId == component.Id);
+        if (productComponent == null)
+            throw new EntityNotFoundException($"У продукта нет такого компонента.");
+        if (quantity <= 0) throw new ArgumentException("Количество должно быть больше 0.");
 
-        if (product.Components.All(c => c.Id != componentId)) return product;
-        product.Components.Remove(component);
+        if (productComponent.Quantity <= quantity) product.Components.Remove(productComponent);
+        else productComponent.Quantity -= quantity;
+
         await productRepository.UpdateAsync(product);
         return product;
-    }
-
-    public async Task<List<Product>> GetUsingAsComponent(int productId)
-    {
-        var product = await productRepository.GetByIdAsync(productId);
-        return await productRepository.GetUsingAsComponentAsync(product);
     }
 }
