@@ -48,6 +48,19 @@ builder.Services.AddLogging(loggingBuilder =>
     loggingBuilder.AddDebug();
 });
 
+var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
+var policyName = builder.Configuration.GetSection("CorsSettings:PolicyName").Get<string>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(policyName ?? "Web", policy =>
+    {
+        policy.WithOrigins(allowedOrigins ?? [])
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 app.Use(async (context, next) =>
@@ -76,6 +89,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(policyName ?? "Web");
 app.UseAuthentication();
 app.UseAuthorization();
 
