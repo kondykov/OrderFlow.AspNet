@@ -21,6 +21,9 @@ public static class IdentityModule
     {
         builder.Services.Configure<IdentityConfig>(builder.Configuration.GetSection("Identity"));
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<ITokenService, TokenService>();
+        builder.Services.AddScoped<IDeviceService, DeviceService>();
+        builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
         builder.Services.AddScoped<IAuthenticationService,AuthenticationService>();
         builder.Services.AddScoped<IRefreshTokensRepository, RefreshTokenRepository>();

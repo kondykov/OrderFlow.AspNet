@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OrderFlow.Shared.Models.Identity;
+using OrderFlow.Shared.Models.Identity.Devices;
 using OrderFlow.Shared.Models.Ordering;
 using OrderFlow.Shared.Models.Payments;
 
@@ -21,6 +22,8 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
     public DbSet<Product> Products { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Payment> Payments { get; set; }
+    public DbSet<Device> Devices { get; set; }
+    public DbSet<Zone> Zones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +71,13 @@ public sealed class DataContext : IdentityDbContext<User, Role, string>
                     c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                     c => c.ToList()
                 )
+            );
+
+        modelBuilder.Entity<Device>()
+            .Property(o => o.DeviceType)
+            .HasConversion(
+                v => v.ToString(),
+                v => (DeviceType)Enum.Parse(typeof(DeviceType), v)
             );
     }
 }
